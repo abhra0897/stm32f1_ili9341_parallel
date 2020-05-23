@@ -6,7 +6,7 @@
  *      Author: Avra
  */
 #include "../../FontsEmbedded/bitmap_typedefs.h"
-#include "stm32f1xx_hal.h"
+#include "stm32f1xx.h"
 
 #ifndef INC_ILI9341_STM32_PARALLEL8_H_
 #define INC_ILI9341_STM32_PARALLEL8_H_
@@ -140,11 +140,9 @@
 */
 
 /*
-inline void write_command_8bit(uint8_t cmd);
-inline void write_data_8bit(uint8_t dat);
-inline void write_data_16bit(uint16_t dat);
-*/
-
+ * Inline function to send 8 bit command to the display
+ * User need not call it
+ */
 static inline void write_command_8bit(uint8_t cmd)
 {
 	//CS_ACTIVE;
@@ -152,6 +150,10 @@ static inline void write_command_8bit(uint8_t cmd)
 	WRITE_8BIT(cmd);
 }
 
+/*
+ * Inline function to send 8 bit data to the display
+ * User need not call it
+ */
 static inline void write_data_8bit(uint8_t dat)
 {
 	//CS_ACTIVE;
@@ -159,7 +161,10 @@ static inline void write_data_8bit(uint8_t dat)
 	WRITE_8BIT(dat);
 }
 
-
+/*
+ * Inline function to send 16 bit data to the display
+ * User need not call it
+ */
 static inline void write_data_16bit(uint16_t dat)
 {
 	//CS_ACTIVE;
@@ -168,27 +173,140 @@ static inline void write_data_16bit(uint16_t dat)
 	WRITE_8BIT((uint8_t)dat);
 }
 
-
+/**
+ * Set an area for drawing on the display with start row,col and end row,col.
+ * User don't need to call it usually, call it only before some functions who don't call it by default.
+ * @param x1 start column address.
+ * @param y1 start row address.
+ * @param x2 end column address.
+ * @param y2 end row address.
+ */
 void ili_set_address_window(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+
+/**
+ * Fills `len` number of pixels with `color`.
+ * Call ili_set_address_window() before calling this function.
+ * @param color 16-bit RGB565 color value
+ * @param len 32-bit number of pixels
+ */
 void ili_fill_color(uint16_t color, uint32_t len);
+
+/**
+ * Draw a line from (x0,y0) to (x1,y1) with `width` and `color`.
+ * @param x0 start column address.
+ * @param y0 start row address.
+ * @param x1 end column address.
+ * @param y1 end row address.
+ * @param width width or thickness of the line
+ * @param color 16-bit RGB565 color of the line
+ */
 void ili_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+
+/*
+ * Called by ili_draw_line().
+ * User need not call it
+ */
 void plot_line_low(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+
+/*
+ * Called by ili_draw_line().
+ * User need not call it
+ */
 void plot_line_high(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+
+/*
+ * Called by ili_draw_line().
+ * User need not call it
+ */
 void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+
+/*
+ * Called by ili_draw_line().
+ * User need not call it
+ */
 void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+
+/**
+ * Rotate the display clockwise or anti-clockwie set by `rotation`
+ * @param rotation Type of rotation. Supported values 0, 1, 2, 3
+ */
 void ili_rotate_display(uint8_t rotation);
+
+/**
+ * Initialize the display driver
+ */
 void ili_init();
 
+/**
+ * Fills a rectangular area with `color`.
+ * Before filling, performs area bound checking
+ * @param x1 Start col address
+ * @param y1 Start row address
+ * @param x2 End col address
+ * @param y2 End row address
+ */
 void ili_fill_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+
+/*
+ * Same as `ili_fill_rect()` but does not do bound checking, so it's slightly faster
+ */
 void ili_fill_rect_fast(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t color);
+
+/**
+ * Fill the entire display (screen) with `color`
+ * @param color 16-bit RGB565 color
+ */
 void ili_fill_screen(uint16_t color);
+
+/*
+ * Rener a character glyph on the display. Called by `ili_draw_string_main()`
+ * User need NOT call it
+ */
 void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_color, const tImage *glyph, uint8_t is_bg);
+
+/**
+ * Renders a string by drawing each character glyph from the passed string.
+ * Called by `ili_draw_string()` and `ili_draw_string_withbg`.
+ * User need NOT call it.
+ */
 void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font, uint8_t is_bg);
+
+/**
+ * Draws a string on the display with `font` and `color` at given position.
+ * Background of this string is transparent
+ * @param x Start col address
+ * @param y Start y address
+ * @param str pointer to the string to be drawn
+ * @param color 16-bit RGB565 color of the string
+ * @param font Pointer to the font of the string
+ */
 void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, tFont *font);
+
+/**
+ * Draws a string on the display with `font`, `fore_color`, and `back_color` at given position.
+ * The string has background color
+ * @param x Start col address
+ * @param y Start y address
+ * @param str pointer to the string to be drawn
+ * @param foe_color 16-bit RGB565 color of the string
+ * @param back_color 16-bit RGB565 color of the string's background
+ * @param font Pointer to the font of the string
+ */
 void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font);
+
+/**
+ * Draw a bitmap image on the display
+ * @param x Start col address
+ * @param y Start row address
+ * @param bitmap Pointer to the image data to be drawn
+ */
 void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage16bit *bitmap);
 
-void ili_fill_rect_colors_array(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t *color_p);
+/**
+ * Draw a pixel at a given position with `color`
+ * @param x Start col address
+ * @param y Start row address
+ */
 void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 //------------------------------------------------------------------------
 #endif /* INC_ILI9341_STM32_PARALLEL8_H_ */
