@@ -1,15 +1,18 @@
 
 
+
 ## ILI9341 Parallel Display Driver for STM32F1
 This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II) bus. It's mainly written for my personal usage.
 
 GPIOs are handled by direct register manipulation for faster performance. As this driver doesn't configure the GPIOs, *user must configure the used ports and pins before using the driver.*
 
+This driver needs STM32 HAL library. To avoid using HAL, replace "HAL_Delay(ms)" with any other delay(ms) function.
+
 ### Download
 Download this repository using [git](https://git-scm.com/):
 
 ```
-https://github.com/abhra0897/stm32f1_ili9341_parallel.git
+git clone https://github.com/abhra0897/stm32f1_ili9341_parallel.git
 ```
 
 ### Wiring
@@ -62,6 +65,26 @@ Connections between STM32F1 and ILI9341 parallel display.
         <td>D7</td>
         <td>D17</td>
         <td>PA7</td>
+    </tr>
+    <tr>
+        <td colspan=2 align=center>RESX</td>
+        <td>PB0</td>
+    </tr>
+    <tr>
+        <td colspan=2 align=center>CSX</td>
+        <td>PB1</td>
+    </tr>
+    <tr>
+        <td colspan=2 align=center>D/CX</td>
+        <td>PB5</td>
+    </tr>
+    <tr>
+        <td colspan=2 align=center>WRX</td>
+        <td>PB4</td>
+    </tr>
+    <tr>
+        <td colspan=2 align=center>RDX</td>
+        <td>PB3</td>
     </tr>
 </table>
 
@@ -178,6 +201,7 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 ### TO DO
 
  - [ ] Add example code(s) and write some docs
+ - [ ] Write better comments
  - [ ] Explain how to create fonts
  - [ ] Optimize driver for speed and size. Speed is the first priority
  - [ ] Add ability to read from the display
