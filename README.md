@@ -9,7 +9,7 @@ GPIOs are handled by direct register manipulation for faster performance. As thi
 Download this repository using [git](https://git-scm.com/):
 
 ```
-https://github.com/abhra0897/msp430_cc1101_energia_v2.git
+https://github.com/abhra0897/stm32f1_ili9341_parallel.git
 ```
 
 ### Wiring
