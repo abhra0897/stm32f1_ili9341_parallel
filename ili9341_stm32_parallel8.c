@@ -15,8 +15,13 @@ uint16_t ili_tftheight = 240;
 
 
 
-/*
- * Set address window to fill with color(s)
+/**
+ * Set an area for drawing on the display with start row,col and end row,col.
+ * User don't need to call it usually, call it only before some functions who don't call it by default.
+ * @param x1 start column address.
+ * @param y1 start row address.
+ * @param x2 end column address.
+ * @param y2 end row address.
  */
 void ili_set_address_window(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
@@ -41,75 +46,10 @@ void ili_set_address_window(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 
 
 
-
 /*
- * Draw a character glyph in the given position with transparent or solid background.
- * draw_string_main() calls this function
+ * Rener a character glyph on the display. Called by `ili_draw_string_main()`
+ * User need NOT call it
  */
-/*
-void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_color, const tImage *glyph, uint8_t is_bg)
-{
-	uint16_t width = 0, height = 0;
-*  Last edited on: May 20, 2020
- *      Author: Avra
-	width = glyph->width;
-	height = glyph->height;
-
-	uint16_t temp_x = x;
-	uint16_t temp_y = y;
-
-	ili_set_address_window(x, y, x + width-1, y + height-1);
-
-	uint32_t mask = 0x80000000;
-
-	int k = 0;
-	while (k < height)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			uint32_t big = ((uint32_t)glyph->data[j*3] << 24) | ((uint32_t)glyph->data[(j*3) + 1] << 16) | ((uint32_t)glyph->data[(j*3) + 2] << 8);
-
-			//If pixel is blank
-			if (big & mask)
-			{
-				temp_x++;
-
-				//Has background color
-				if (is_bg)
-				{
-					write_data_16bit(back_color);
-				}
-				//transarent background
-				else
-				{
-					//skipping the current pixel and set the column address to next pixel
-					ili_set_address_window(temp_x, temp_y, x + width-1, y + height-1);
-				}
-
-			}
-
-			//if pixel is not blank
-			else
-			{
-				temp_x++;
-				//display the color in that pixel position
-				write_data_16bit(fore_color);
-			}
-
-		}
-		k++;
-		mask = (mask >> 1);
-
-		//New row starts. So, column is set to initial value and row is increased by one
-		temp_x = x;
-		temp_y++;
-
-		//set the pixel position as per the column and row value
-		ili_set_address_window(temp_x, temp_y, x + width-1, y + height-1);
-
-	}
-}
-*/
 void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_color, const tImage *glyph, uint8_t is_bg)
 {
 	uint16_t width = 0, height = 0;
@@ -178,12 +118,13 @@ void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_co
 
 
 
-/*
- * draw a string in a given position
- * This function is called by ili_draw_string() and ili_draw_string_withbg()
+/**
+ * Renders a string by drawing each character glyph from the passed string.
+ * Called by `ili_draw_string()` and `ili_draw_string_withbg()`.
  * Text is wrapped automatically if it hits the screen boundary.
  * x_padding and y_padding defines horizontal and vertical distance (in px) between two characters
  * is_bg=1 : Text will habe background color,   is_bg=0 : Text will have transparent background
+ * User need NOT call it.
  */
 
 void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font, uint8_t is_bg)
@@ -245,21 +186,62 @@ void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color
 }
 
 
+/**
+ * Draws a string on the display with `font` and `color` at given position.
+ * Background of this string is transparent
+ * @param x Start col address
+ * @param y Start y address
+ * @param str pointer to the string to be drawn
+ * @param color 16-bit RGB565 color of the string
+ * @param font Pointer to the font of the string
+ */
 void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, tFont *font)
 {
 	ili_draw_string_main(x, y, str, color, 0, font, 0);
 }
 
+
+/**
+ * Draws a string on the display with `font`, `fore_color`, and `back_color` at given position.
+ * The string has background color
+ * @param x Start col address
+ * @param y Start y address
+ * @param str pointer to the string to be drawn
+ * @param foe_color 16-bit RGB565 color of the string
+ * @param back_color 16-bit RGB565 color of the string's background
+ * @param font Pointer to the font of the string
+ */
 void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font)
 {
 	ili_draw_string_main(x, y, str, fore_color, back_color, font, 1);
 }
 
 
-/*
- * Draw a bitmap image on the screen
+/**
+ * Draw a bitmap image on the display
+ * @param x Start col address
+ * @param y Start row address
+ * @param bitmap Pointer to the image data to be drawn
  */
-void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage16bit *bitmap)
+// void ili_draw_bitmap_old(uint16_t x, uint16_t y, const tImage16bit *bitmap)
+// {
+// 	uint16_t width = 0, height = 0;
+// 	width = bitmap->width;
+// 	height = bitmap->height;
+
+// 	uint16_t total_pixels = width * height;
+
+// 	ili_set_address_window(x, y, x + width-1, y + height-1);
+
+// 	DC_DAT;
+// 	for (uint16_t pixels = 0; pixels < total_pixels; pixels++)
+// 	{
+// 		WRITE_8BIT((uint8_t)(bitmap->data[pixels] >> 8));
+// 		WRITE_8BIT((uint8_t)bitmap->data[pixels]);
+// 	}
+// }
+
+void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage *bitmap)
 {
 	uint16_t width = 0, height = 0;
 	width = bitmap->width;
@@ -272,18 +254,23 @@ void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage16bit *bitmap)
 	DC_DAT;
 	for (uint16_t pixels = 0; pixels < total_pixels; pixels++)
 	{
-		WRITE_8BIT((uint8_t)(bitmap->data[pixels] >> 8));
-		WRITE_8BIT((uint8_t)bitmap->data[pixels]);
+		WRITE_8BIT((uint8_t)(bitmap->data[2*pixels]));
+		WRITE_8BIT((uint8_t)(bitmap->data[2*pixels + 1]));
 	}
 }
 
 
-/*
- * Fill an area with color. set_address_window() should be called before calling it
- * Here, macros are directly called (instead of inline functions) for performance increase
+/**
+ * Fills `len` number of pixels with `color`.
+ * Call ili_set_address_window() before calling this function.
+ * @param color 16-bit RGB565 color value
+ * @param len 32-bit number of pixels
  */
 void ili_fill_color(uint16_t color, uint32_t len)
 {
+	/*
+	* Here, macros are directly called (instead of inline functions) for performance increase
+	*/
 	uint16_t blocks = (uint16_t)(len / 64); // 64 pixels/block
 	uint8_t  pass_count;
 	uint8_t color_high = color >> 8;
@@ -338,30 +325,32 @@ void ili_fill_color(uint16_t color, uint32_t len)
 }
 
 
-/*
- * @brief	Fill a rectangle specified by initial co-ordinates and width and height
- * @param	x1: 16 bit integer to define initial position in x axis
- * @param	y1: 16 bit integer to define initial position in y axis
- * @param	w:  16 bit integer to define width
- * @param	h:  16 bit integer to define height
- * @param	color: 16 bit integer to define the color
+/**
+ * Fills a rectangular area with `color`.
+ * Before filling, performs area bound checking
+ * @param x Start col address
+ * @param y Start row address
+ * @param w Width of rectangle
+ * @param h Height of rectangle
+ * @param color 16-bit RGB565 color
  */
-
-
-void ili_fill_rect(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t color)
+void ili_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
-	if (x1 >= ili_tftwidth || y1 >= ili_tftheight || w == 0 || h == 0)
+	if (x >= ili_tftwidth || y >= ili_tftheight || w == 0 || h == 0)
 		return;
-	if (x1 + w - 1 >= ili_tftwidth)
-		w = ili_tftwidth - x1;
-	if (y1 + h - 1 >= ili_tftheight)
-		h = ili_tftheight - y1;
+	if (x + w - 1 >= ili_tftwidth)
+		w = ili_tftwidth - x;
+	if (y + h - 1 >= ili_tftheight)
+		h = ili_tftheight - y;
 
-	ili_set_address_window(x1, y1, x1 + w - 1, y1 + h - 1);
+	ili_set_address_window(x, y, x + w - 1, y + h - 1);
 	ili_fill_color(color, (uint32_t)w * (uint32_t)h);
 }
 
 
+/*
+ * Same as `ili_fill_rect()` but does not do bound checking, so it's slightly faster
+ */
 void ili_fill_rect_fast(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t color)
 {
 	ili_set_address_window(x1, y1, x1 + w - 1, y1 + h - 1);
@@ -369,8 +358,9 @@ void ili_fill_rect_fast(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16
 }
 
 
-/*
- * Fill the whole screen with a color
+/**
+ * Fill the entire display (screen) with `color`
+ * @param color 16-bit RGB565 color
  */
 void ili_fill_screen(uint16_t color)
 {
@@ -380,8 +370,8 @@ void ili_fill_screen(uint16_t color)
 
 
 /*
- * When dy < 0
- * It's called only by line_draw function. Not for user
+ * Called by ili_draw_line().
+ * User need not call it
  */
 void plot_line_low(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
 {
@@ -424,8 +414,8 @@ void plot_line_low(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t w
 
 
 /*
- * When dx < 0
- * It's called only by line_draw function. Not for user
+ * Called by ili_draw_line().
+ * User need not call it
  */
 void plot_line_high(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
 {
@@ -468,13 +458,22 @@ void plot_line_high(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t 
 }
 
 
-/*
- * Brehensen's algorithm is used.
- * Draw line between ANY two points.
- * Not necessarily start points has to be less than end points.
+/**
+ * Draw a line from (x0,y0) to (x1,y1) with `width` and `color`.
+ * @param x0 start column address.
+ * @param y0 start row address.
+ * @param x1 end column address.
+ * @param y1 end row address.
+ * @param width width or thickness of the line
+ * @param color 16-bit RGB565 color of the line
  */
 void ili_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
 {
+	/*
+	* Brehensen's algorithm is used.
+	* Not necessarily start points has to be less than end points.
+	*/
+
 	if (x0 == x1)	//vertical line
 	{
 		ili_draw_fast_v_line(x0, y0, x1, y1, width, color);
@@ -505,34 +504,49 @@ void ili_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t w
 
 }
 
+
 /*
- * Draw a horizontal line very fast
+ * Called by ili_draw_line().
+ * User need not call it
  */
 void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
 {
-	ili_set_address_window(x0, y0, x1, y0+width-1);	//as it's horizontal line, y1=y0.. must be.
+	/*
+	* Draw a horizontal line very fast
+	*/
 
+	ili_set_address_window(x0, y0, x1, y0+width-1);	//as it's horizontal line, y1=y0.. must be.
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(x1 - x0 + 1));
 }
 
+
 /*
- * Draw a vertical line very fast
+ * Called by ili_draw_line().
+ * User need not call it
  */
 void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
 {
-	ili_set_address_window(x0, y0, x0+width-1, y1);	//as it's vertical line, x1=x0.. must be.
+	/*
+	* Draw a vertical line very fast
+	*/
 
+	ili_set_address_window(x0, y0, x0+width-1, y1);	//as it's vertical line, x1=x0.. must be.
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(y1 - y0 + 1));
 }
 
 
-/*
- * Draw a single pixel in a given point with a given color
- * Why?: This function is mainly added in the driver so that  ui libraries can use it.
- * example: LittlevGL requires user to supply a function that can draw pixel
+/**
+ * Draw a pixel at a given position with `color`
+ * @param x Start col address
+ * @param y Start row address
  */
 void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
+	/*
+	* Why?: This function is mainly added in the driver so that  ui libraries can use it.
+	* example: LittlevGL requires user to supply a function that can draw pixel
+	*/
+
 	ili_set_address_window(x, y, x, y);
 	DC_DAT;
 	WRITE_8BIT((uint8_t)(color >> 8));
@@ -540,88 +554,89 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 }
 
 
-/*
- * Rotate the display and also set the display width and height global variables
- * Parameters:
- * 	(uint8_t)rotation :	Rotation Type
- * 					0 : Default landscape
- * 					1 : Potrait 1
- * 					2 : Landscape 2
- * 					3 : Potrait 2
+
+/**
+ * Rotate the display clockwise or anti-clockwie set by `rotation`
+ * @param rotation Type of rotation. Supported values 0, 1, 2, 3
  */
 void ili_rotate_display(uint8_t rotation)
 {
+	/*
+	* 	(uint8_t)rotation :	Rotation Type
+	* 					0 : Default landscape
+	* 					1 : Potrait 1
+	* 					2 : Landscape 2
+	* 					3 : Potrait 2
+	*/
 	switch (rotation)
 	{
 		case 0:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0x40);				//MX: 1, MY: 0, MV: 0	(Landscape 1. Default)
-			//CS_IDLE;
 			ili_tftheight = 240;
 			ili_tftwidth = 320;
 			break;
 		case 1:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0x20);				//MX: 0, MY: 0, MV: 1	(Potrait 1)
-			//CS_IDLE;
 			ili_tftheight = 320;
 			ili_tftwidth = 240;
 			break;
 		case 2:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0x80);				//MX: 0, MY: 1, MV: 0	(Landscape 2)
-			//CS_IDLE;
 			ili_tftheight = 240;
 			ili_tftwidth = 320;
 			break;
 		case 3:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0xE0);				//MX: 1, MY: 1, MV: 1	(Potrait 2)
-			//CS_IDLE;
 			ili_tftheight = 320;
 			ili_tftwidth = 240;
 			break;
 	}
 }
 
-/*
- * Initialize the ili9341 driver
+/**
+ * Initialize the display driver
  */
 void ili_init()
 {
+	// Set gpio clock
+	CONFIG_GPIO_CLOCK();
+	// Configure gpio output dir and mode
+	CONFIG_GPIO();
+
 	CS_ACTIVE;
 
 	RST_IDLE;
-	HAL_Delay(5);
 	RST_ACTIVE;
-	HAL_Delay(20);
 	RST_IDLE;
-	HAL_Delay(150);
+	
+	// Approx 10ms delay at 128MHz clock
+	for (uint32_t i = 0; i < 2000000; i++)
+		__asm__("nop");
 
 	write_command_8bit(0xEF);
 	write_data_8bit(0x03);
 	write_data_8bit(0x80);
 	write_data_8bit(0x02);
-	//CS_IDLE;
 
 	write_command_8bit(0xCF);
 	write_data_8bit(0x00);
 	write_data_8bit(0XC1);
 	write_data_8bit(0X30);
-	//CS_IDLE;
 
 	write_command_8bit(0xED);
 	write_data_8bit(0x64);
 	write_data_8bit(0x03);
 	write_data_8bit(0X12);
 	write_data_8bit(0X81);
-	//CS_IDLE;
 
 	write_command_8bit(0xE8);
 	write_data_8bit(0x85);
 	write_data_8bit(0x00);
 	write_data_8bit(0x78);
-	//CS_IDLE;
 
 	write_command_8bit(0xCB);
 	write_data_8bit(0x39);
@@ -629,60 +644,47 @@ void ili_init()
 	write_data_8bit(0x00);
 	write_data_8bit(0x34);
 	write_data_8bit(0x02);
-	//CS_IDLE;
 
 	write_command_8bit(0xF7);
 	write_data_8bit(0x20);
-	//CS_IDLE;
 
 	write_command_8bit(0xEA);
 	write_data_8bit(0x00);
 	write_data_8bit(0x00);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_PWCTR1);    //Power control
 	write_data_8bit(0x23);   //VRH[5:0]
-	//CS_IDLE;
 
 	write_command_8bit(ILI_PWCTR2);    //Power control
 	write_data_8bit(0x10);   //SAP[2:0];BT[3:0]
-	//CS_IDLE;
 
 	write_command_8bit(ILI_VMCTR1);    //VCM control
 	write_data_8bit(0x3e);
 	write_data_8bit(0x28);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_VMCTR2);    //VCM control2
 	write_data_8bit(0x86);  //--
-	//CS_IDLE;
 
 	write_command_8bit(ILI_MADCTL);    // Memory Access Control
 	write_data_8bit(0x40); // Rotation 0 (landscape mode)
-	//CS_IDLE;
 
 	write_command_8bit(ILI_PIXFMT);
 	write_data_8bit(0x55);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_FRMCTR1);
 	write_data_8bit(0x00);
 	write_data_8bit(0x13); // 0x18 79Hz, 0x1B default 70Hz, 0x13 100Hz
-	//CS_IDLE;
 
 	write_command_8bit(ILI_DFUNCTR);    // Display Function Control
 	write_data_8bit(0x08);
 	write_data_8bit(0x82);
 	write_data_8bit(0x27);
-	//CS_IDLE;
 
 	write_command_8bit(0xF2);    // 3Gamma Function Disable
 	write_data_8bit(0x00);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_GAMMASET);    //Gamma curve selected
 	write_data_8bit(0x01);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_GMCTRP1);    //Set Gamma
 	write_data_8bit(0x0F);
@@ -700,7 +702,6 @@ void ili_init()
 	write_data_8bit(0x0E);
 	write_data_8bit(0x09);
 	write_data_8bit(0x00);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_GMCTRN1);    //Set Gamma
 	write_data_8bit(0x00);
@@ -718,13 +719,10 @@ void ili_init()
 	write_data_8bit(0x31);
 	write_data_8bit(0x36);
 	write_data_8bit(0x0F);
-	//CS_IDLE;
 
 	write_command_8bit(ILI_SLPOUT);    //Exit Sleep
-	//CS_IDLE;
-	HAL_Delay(150);
+	//delay 150ms if display output is inaccurate
 
 	write_command_8bit(ILI_DISPON);    //Display on
-	//CS_IDLE;
-	HAL_Delay(150);
+	//delay 150ms if display output is inaccurate
 }
