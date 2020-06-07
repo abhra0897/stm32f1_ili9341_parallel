@@ -92,7 +92,10 @@ Connections between STM32F1 and ILI9341 parallel display.
 TBD
 
 ### Example
-Example code is in **example** directory. To compile using the provided Makefile, keep the directory structure as it is. If you change the directory structure, edit the SRCS, INCLS, and LIBS in the Makefile accordingly.
+Example code (**[main.c](example/main.c)**) is in **[example](example)** directory. To compile using the provided [Makefile](example/Makefile), keep the directory structure as it is. If you change the directory structure, edit the SRCS, INCLS, and LIBS in the Makefile accordingly.
+Example is compiled and tested on STM32F103 (overclocked to 128MHz)
+
+![Output of example code](example/photo/example_output.gif)
 
 ### Important API Methods
 
@@ -208,24 +211,6 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
  - [ ] Circle drawing support (maybe)
 
 ### License
-The MIT License (MIT)
+**[libopencm3](libopencm3)** and any derivative of the same is licensed under the terms of the GNU Lesser General Public License (LGPL), version 3 or later. The binaries generated after compilation will also be licensed under the same. See [this](libopencm3/COPYING.LGPL3) and [this](libopencm3/COPYING.GPL3) for the LGPL3 and GPL3 licenses.
 
-Copyright (c) 2020 Avra Mitra
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+All other source codes of the root directory and example directory are licensed under MIT License. See [MIT License](LICENSE).

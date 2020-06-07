@@ -1,12 +1,40 @@
+/*
+MIT License
+
+Copyright (c) 2020 Avra Mitra
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
 #include "font_microsoft_16.h"
 #include "ili9341_stm32_parallel8.h"
-#include <stdlib.h>
 
+/**
+ * Configure RCC registers for 8MHz HSE and 128MHz output.
+ * I'm using STM32F103 which supports maximum 72 MHz, so I'm overclocking it
+ */
 void rcc_clock_setup_in_hse_8mhz_out_128mhz(void);
 
 
-/* Set STM32 to 72 MHz. */
+/* Set STM32 to 128 MHz. (overclocking for faster performance) */
 static void clock_setup(void)
 {
 	rcc_clock_setup_in_hse_8mhz_out_128mhz();
