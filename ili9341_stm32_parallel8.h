@@ -5,8 +5,9 @@
  *  Last edited on: May 20, 2020
  *      Author: Avra
  */
-#include "../../FontsEmbedded/bitmap_typedefs.h"
-#include "stm32f1xx.h"
+#include "bitmap_typedefs.h"
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
 
 #ifndef INC_ILI9341_STM32_PARALLEL8_H_
 #define INC_ILI9341_STM32_PARALLEL8_H_
@@ -104,34 +105,51 @@
  *		--Control--
  * RESETn				PB0
  * CSn					PB1
- * D/Cn					PB5
+ * D/Cn					PB5#include <libopencm3/stm32/rcc.h>
  * WRn					PB4
  * RDn					PB3
  */
 #define ILI_PORT_DATA	GPIOA
 #define ILI_PORT_CTRL	GPIOB
-#define ILI_RST			GPIO_PIN_0
-#define ILI_CS			GPIO_PIN_1
-#define ILI_DC			GPIO_PIN_5
-#define ILI_WR			GPIO_PIN_4
-#define ILI_RD			GPIO_PIN_3
+#define ILI_RST			GPIO0
+#define ILI_CS			GPIO1
+#define ILI_DC			GPIO5
+#define ILI_WR			GPIO4
+#define ILI_RD			GPIO3
 
-#define RD_ACTIVE		ILI_PORT_CTRL->BRR = (uint32_t)ILI_RD
-#define RD_IDLE			ILI_PORT_CTRL->BSRR = (uint32_t)ILI_RD
-#define WR_ACTIVE		ILI_PORT_CTRL->BRR = (uint32_t)ILI_WR
-#define WR_IDLE			ILI_PORT_CTRL->BSRR = (uint32_t)ILI_WR
-#define DC_CMD			ILI_PORT_CTRL->BRR = (uint32_t)ILI_DC
-#define DC_DAT			ILI_PORT_CTRL->BSRR = (uint32_t)ILI_DC
-#define CS_ACTIVE		ILI_PORT_CTRL->BRR = (uint32_t)ILI_CS
-#define CS_IDLE			ILI_PORT_CTRL->BSRR = (uint32_t)ILI_CS
-#define RST_ACTIVE		ILI_PORT_CTRL->BRR = (uint32_t)ILI_RST
-#define RST_IDLE		ILI_PORT_CTRL->BSRR = (uint32_t)ILI_RST
+#define RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
+#define RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
+#define WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_WR
+#define WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_WR
+#define DC_CMD			GPIO_BRR(ILI_PORT_CTRL) = ILI_DC
+#define DC_DAT			GPIO_BSRR(ILI_PORT_CTRL) = ILI_DC
+#define CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_CS
+#define CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_CS
+#define RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RST
+#define RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL) = ILI_RST
 
 #define WR_STROBE		{WR_ACTIVE; WR_IDLE;}
 #define RD_STROBE		{RD_ACTIVE; RD_IDLE;}
 
-#define WRITE_8BIT(d)	{ILI_PORT_DATA->BSRR = (uint32_t)(0x00FF0000 | ((d) & 0xFF)); WR_STROBE;}
-#define READ_8BIT(d)	{d = (uint8_t)(ILI_PORT_DATA->IDR & 0x00FF;}
+#define WRITE_8BIT(d)	{GPIO_BSRR(ILI_PORT_DATA) = (uint32_t)(0x00FF0000 | ((d) & 0xFF)); WR_STROBE;}
+#define READ_8BIT(d)	{d = (uint8_t)(GPIO_IDR(ILI_PORT_DATA) & 0x00FF;}
+
+#define CONFIG_GPIO_CLOCK()	    { \
+									rcc_periph_clock_enable(RCC_GPIOB); \
+									rcc_periph_clock_enable(RCC_GPIOA); \
+									rcc_periph_clock_enable(RCC_AFIO); \
+								}
+#define CONFIG_GPIO()			{ \
+									/*Configure GPIO pins : PA0 PA1 PA2 PA3 PA4 PA5 PA6 PA7 */ \
+									gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0|GPIO1|GPIO2|GPIO3|GPIO4|GPIO5|GPIO6|GPIO7); \
+									/*Configure GPIO pins : PB0 PB1 PB3 PB4 PB5 PB8 */ \
+									gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0|GPIO1|GPIO3|GPIO4|GPIO5|GPIO8); \
+									/*Configure GPIO pin Output Level */ \
+									gpio_set(GPIOA, GPIO0|GPIO1|GPIO2|GPIO3|GPIO4|GPIO5|GPIO6|GPIO7); \
+									gpio_set(GPIOB, GPIO0|GPIO1|GPIO3|GPIO4|GPIO5|GPIO8); \
+									/* Configures PB4 as GPIO */ \
+									AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST; \
+								}
 
 #define SWAP(a, b)		{uint16_t temp; temp = a; a = b; b = temp;}
 
@@ -240,17 +258,18 @@ void ili_init();
 /**
  * Fills a rectangular area with `color`.
  * Before filling, performs area bound checking
- * @param x1 Start col address
- * @param y1 Start row address
- * @param x2 End col address
- * @param y2 End row address
+ * @param x Start col address
+ * @param y Start row address
+ * @param w Width of rectangle
+ * @param h Height of rectangle
+ * @param color 16-bit RGB565 color
  */
-void ili_fill_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ili_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 /*
  * Same as `ili_fill_rect()` but does not do bound checking, so it's slightly faster
  */
-void ili_fill_rect_fast(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t color);
+void ili_fill_rect_fast(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 /**
  * Fill the entire display (screen) with `color`
@@ -266,7 +285,10 @@ void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_co
 
 /**
  * Renders a string by drawing each character glyph from the passed string.
- * Called by `ili_draw_string()` and `ili_draw_string_withbg`.
+ * Called by `ili_draw_string()` and `ili_draw_string_withbg()`.
+ * Text is wrapped automatically if it hits the screen boundary.
+ * x_padding and y_padding defines horizontal and vertical distance (in px) between two characters
+ * is_bg=1 : Text will habe background color,   is_bg=0 : Text will have transparent background
  * User need NOT call it.
  */
 void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font, uint8_t is_bg);
@@ -300,7 +322,8 @@ void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_col
  * @param y Start row address
  * @param bitmap Pointer to the image data to be drawn
  */
-void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage16bit *bitmap);
+void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage *bitmap);
+//void ili_draw_bitmap_old(uint16_t x, uint16_t y, const tImage16bit *bitmap);
 
 /**
  * Draw a pixel at a given position with `color`
@@ -308,5 +331,6 @@ void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage16bit *bitmap);
  * @param y Start row address
  */
 void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
+
 //------------------------------------------------------------------------
 #endif /* INC_ILI9341_STM32_PARALLEL8_H_ */
