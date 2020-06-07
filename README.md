@@ -4,9 +4,9 @@
 ## ILI9341 Parallel Display Driver for STM32F1
 This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II) bus. It's mainly written for my personal usage.
 
-GPIOs are handled by direct register manipulation for faster performance. As this driver doesn't configure the GPIOs, *user must configure the used ports and pins before using the driver.*
+GPIOs are handled by direct register manipulation for faster performance. *This driver now configures the used GPIOs, so user need not do it anymore*.
 
-This driver needs STM32 HAL library. To avoid using HAL, replace "HAL_Delay(ms)" with any other delay(ms) function.
+This driver needs **[libopencm3](https://github.com/libopencm3/libopencm3.git)** library. The library is provided with this repository. You may get the latest version of libopencm3 from [here](https://github.com/libopencm3/libopencm3.git), but that may or may not work depending on the changes made in libopencm3 latest version.
 
 ### Download
 Download this repository using [git](https://git-scm.com/):
@@ -92,8 +92,7 @@ Connections between STM32F1 and ILI9341 parallel display.
 TBD
 
 ### Example
-Example code will be in examples directory.
-TBD
+Example code is in **example** directory. To compile using the provided Makefile, keep the directory structure as it is. If you change the directory structure, edit the SRCS, INCLS, and LIBS in the Makefile accordingly.
 
 ### Important API Methods
 
@@ -141,12 +140,13 @@ void ili_rotate_display(uint8_t rotation);
 /**
  * Fills a rectangular area with `color`.
  * Before filling, performs area bound checking
- * @param x1 Start col address
- * @param y1 Start row address
- * @param x2 End col address
- * @param y2 End row address
+ * @param x Start col address
+ * @param y Start row address
+ * @param w Width of rectangle
+ * @param h Height of rectangle
+ * @param color 16-bit RGB565 color
  */
-void ili_fill_rect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ili_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 /*
  * Same as `ili_fill_rect()` but does not do bound checking, so it's slightly faster
@@ -188,7 +188,7 @@ void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_col
  * @param y Start row address
  * @param bitmap Pointer to the image data to be drawn
  */
-void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage16bit *bitmap);
+void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage *bitmap);
 
 /**
  * Draw a pixel at a given position with `color`
@@ -200,8 +200,8 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 ```
 ### TO DO
 
- - [ ] Add example code(s) and write some docs
- - [ ] Write better comments
+ - [x] Add example code(s) and write some docs
+ - [x] Write better comments
  - [ ] Explain how to create fonts
  - [ ] Optimize driver for speed and size. Speed is the first priority
  - [ ] Add ability to read from the display
