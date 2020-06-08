@@ -296,7 +296,7 @@ void ili_fill_color(uint16_t color, uint32_t len)
 	WRITE_8BIT(color_high); WRITE_8BIT(color_low);
 	len--;
 
-	// If higher byte abd lower byte are identical,
+	// If higher byte and lower byte are identical,
 	// just strobe the WR pin to send the previous data
 	if(color_high == color_low)
 	{
@@ -383,6 +383,27 @@ void ili_fill_screen(uint16_t color)
 	ili_fill_color(color, (uint32_t)ili_tftwidth * (uint32_t)ili_tftheight);
 }
 
+
+/**
+ * Draw a rectangle
+*/
+void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
+{
+	// Perform bound checking
+	if (x >= ili_tftwidth || y >= ili_tftheight || w == 0 || h == 0)
+		return;
+	if (x + w - 1 >= ili_tftwidth)
+		w = ili_tftwidth - x;
+	if (y + h - 1 >= ili_tftheight)
+		h = ili_tftheight - y;
+
+	ili_draw_fast_h_line(x, y, x+w-1, y-1, 1, color);
+	ili_draw_fast_h_line(x, y+h, x+w-1, y+h-1, 1, color);
+	ili_draw_fast_v_line(x, y, x-1, y+h-1, 1, color);
+	ili_draw_fast_v_line(x+w, y, x+w-1, y+h-1, 1, color);
+	 
+
+}
 
 /*
  * Called by ili_draw_line().

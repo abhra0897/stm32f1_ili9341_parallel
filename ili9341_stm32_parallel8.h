@@ -238,6 +238,16 @@ void ili_fill_color(uint16_t color, uint32_t len);
  */
 void ili_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
 
+/**
+ * Experimental
+ * Draw a rectangle without filling it
+ * @param x start column address.
+ * @param y start row address
+ * @param w Width of rectangle
+ * @param h height of rectangle
+ */
+void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
+
 /*
  * Called by ili_draw_line().
  * User need not call it
