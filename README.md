@@ -163,6 +163,16 @@ void ili_fill_rect_fast(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16
 void ili_fill_screen(uint16_t color);
 
 /**
+ * Experimental
+ * Draw a rectangle without filling it
+ * @param x start column address.
+ * @param y start row address
+ * @param w Width of rectangle
+ * @param h height of rectangle
+ */
+void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
+
+/**
  * Draws a string on the display with `font` and `color` at given position.
  * Background of this string is transparent
  * @param x Start col address
@@ -211,6 +221,6 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
  - [ ] Circle drawing support (maybe)
 
 ### License
-**[libopencm3](libopencm3)** and any derivative of the same is licensed under the terms of the GNU Lesser General Public License (LGPL), version 3 or later. The binaries generated after compilation will also be licensed under the same. See [this](libopencm3/COPYING.LGPL3) and [this](libopencm3/COPYING.GPL3) for the LGPL3 and GPL3 licenses.
+**[libopencm3](libopencm3)** and any derivative of the same are licensed under the terms of the GNU Lesser General Public License (LGPL), version 3 or later. The binaries generated after compilation will also be licensed under the same. See [this](libopencm3/COPYING.LGPL3) and [this](libopencm3/COPYING.GPL3) for the LGPL3 and GPL3 licenses.
 
-All other source codes of the root directory and example directory are licensed under MIT License. See [MIT License](LICENSE).
+All other source codes of the root directory and example directory are licensed under MIT License, unless the source file has no other license asigned for it. See [MIT License](LICENSE).
