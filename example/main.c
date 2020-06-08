@@ -59,6 +59,9 @@ int main(void)
 	// Fill a rectangle with green yellow
 	ili_fill_rect(20, 0, 80, 80, ILI_COLOR_PINK);
 
+	// Draw a rectangle
+	ili_draw_rectangle(5, 160, 50, 50, ILI_COLOR_BLACK);
+
 	// Write a string with transparent background at (0, 0) position with font `font_microsoft_16`
 	ili_draw_string(0, 0, "Hello world", 0, &font_microsoft_16);
 
