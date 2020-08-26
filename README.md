@@ -8,6 +8,8 @@ GPIOs are handled by direct register manipulation for faster performance. *This 
 
 This driver needs **[libopencm3](https://github.com/libopencm3/libopencm3.git)** library. The library is provided with this repository. You may get the latest version of libopencm3 from [here](https://github.com/libopencm3/libopencm3.git), but that may or may not work depending on the changes made in libopencm3 latest version.
 
+In order to be able to program smt32 devices [st-flash is needed](https://github.com/stlink-org/stlink/blob/master/doc/man/st-flash.md)
+
 ### Download
 Download this repository using [git](https://git-scm.com/):
 

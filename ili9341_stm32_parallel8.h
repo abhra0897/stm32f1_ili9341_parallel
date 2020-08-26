@@ -109,7 +109,7 @@ SOFTWARE.
 #define ILI_COLOR_GREENYELLOW 0xAFE5  ///< 173, 255,  41
 #define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
 
-
+/*************************** Pin confirugation START ************************
 /**
  * Pin mapping:
  * ILI9341				STM32
@@ -128,12 +128,30 @@ SOFTWARE.
  * RDn					PB3
  */
 #define ILI_PORT_DATA	GPIOA
+#define DATA_0			GPIO0
+#define DATA_1			GPIO1
+#define DATA_2			GPIO2
+#define DATA_3			GPIO3
+#define DATA_4			GPIO4
+#define DATA_5			GPIO5
+#define DATA_6			GPIO6
+#define DATA_7			GPIO7
 #define ILI_PORT_CTRL	GPIOB
 #define ILI_RST			GPIO0
 #define ILI_CS			GPIO1
 #define ILI_DC			GPIO5
 #define ILI_WR			GPIO4
 #define ILI_RD			GPIO3
+
+#define JTAG_REMAPPING_MODE		AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST
+/*
+Possible values:
+AFIO_MAPR_SWJ_CFG_FULL_SWJ: Full Serial Wire JTAG capability
+AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST:  Full Serial Wire JTAG capability without JNTRST (Configures PB4 as GPIO)
+AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON: JTAG-DP disabled with SW-DP enabled
+AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
+*/
+/******* Pin confirugation END (no changes are needed below this line) *******/
 
 #define RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
 #define RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
@@ -158,15 +176,26 @@ SOFTWARE.
 									rcc_periph_clock_enable(RCC_AFIO); \
 								}
 #define CONFIG_GPIO()			{ \
-									/*Configure GPIO pins : PA0 PA1 PA2 PA3 PA4 PA5 PA6 PA7 */ \
-									gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0|GPIO1|GPIO2|GPIO3|GPIO4|GPIO5|GPIO6|GPIO7); \
-									/*Configure GPIO pins : PB0 PB1 PB3 PB4 PB5 PB8 */ \
-									gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0|GPIO1|GPIO3|GPIO4|GPIO5|GPIO8); \
+									/*Configure ILI_PORT_DATA GPIO pins */ \
+									gpio_set_mode( \
+										ILI_PORT_DATA, \
+										GPIO_MODE_OUTPUT_50_MHZ, \
+										GPIO_CNF_OUTPUT_PUSHPULL, \
+										DATA_0 | DATA_1 | DATA_2 | DATA_3 | DATA_4 | DATA_5 | DATA_6 | DATA_7); \
+									/*Configure ILI_PORT_CTRL GPIO pins */ \
+									gpio_set_mode(ILI_PORT_CTRL, \
+										GPIO_MODE_OUTPUT_50_MHZ, \
+										GPIO_CNF_OUTPUT_PUSHPULL, \
+										ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
 									/*Configure GPIO pin Output Level */ \
-									gpio_set(GPIOA, GPIO0|GPIO1|GPIO2|GPIO3|GPIO4|GPIO5|GPIO6|GPIO7); \
-									gpio_set(GPIOB, GPIO0|GPIO1|GPIO3|GPIO4|GPIO5|GPIO8); \
-									/* Configures PB4 as GPIO */ \
-									AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST; \
+									gpio_set( \
+										ILI_PORT_DATA, \
+										DATA_0 | DATA_1 | DATA_2 | DATA_3 | DATA_4 | DATA_5 | DATA_6 | DATA_7); \
+									gpio_set( \
+										ILI_PORT_CTRL, \
+										ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
+									/* Remap JTAG pins */ \
+									AFIO_MAPR |= JTAG_REMAPPING_MODE; \
 								}
 
 #define SWAP(a, b)		{uint16_t temp; temp = a; a = b; b = temp;}

@@ -4,8 +4,9 @@
 
 TARGET=main
 
-
-TOOLCHAIN_PREFIX=~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi
+# Uncomment needed toolchain configuration line
+#TOOLCHAIN_PREFIX=~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi
+TOOLCHAIN_PREFIX=arm-none-eabi
 
 CC=$(TOOLCHAIN_PREFIX)-gcc
 LD=$(TOOLCHAIN_PREFIX)-gcc
@@ -60,8 +61,7 @@ LFLAGS += -nostartfiles #We're using no start file. Without this flag, get linke
 
 ################### Recipe to make all (build and burn) ####################
 .PHONY: all
-all: build burn
-
+all: build
 
 ################### Recipe to build ####################
 .PHONY: build
