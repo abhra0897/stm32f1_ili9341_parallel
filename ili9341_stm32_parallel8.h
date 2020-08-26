@@ -126,6 +126,10 @@ SOFTWARE.
  * D/Cn					PB5#include <libopencm3/stm32/rcc.h>
  * WRn					PB4
  * RDn					PB3
+ *
+ * >>>>>>>>>>>> ATTENTION: if there are other ports in use, e.g. GPIOC,
+ * >>>>>>>>>>>> please, update CONFIG_GPIO_CLOCK() and CONFIG_GPIO()
+ * >>>>>>>>>>>> macros below accordingly.
  */
 #define ILI_PORT_DATA	GPIOA
 #define DATA_0			GPIO0
@@ -151,6 +155,7 @@ AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST:  Full Serial Wire JTAG capability without 
 AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON: JTAG-DP disabled with SW-DP enabled
 AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
 */
+
 /******* Pin confirugation END (no changes are needed below this line) *******/
 
 #define RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
