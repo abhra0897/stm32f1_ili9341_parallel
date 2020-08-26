@@ -109,8 +109,8 @@ SOFTWARE.
 #define ILI_COLOR_GREENYELLOW 0xAFE5  ///< 173, 255,  41
 #define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
 
-/*************************** Pin confirugation START ************************
-/**
+/*************************** Pin confirugation START ************************/
+/*
  * Pin mapping:
  * ILI9341				STM32
  * ---------------------------
