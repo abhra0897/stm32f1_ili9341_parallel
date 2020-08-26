@@ -41,7 +41,10 @@ CFLAGS += -mlittle-endian -mthumb -mthumb-interwork
 CFLAGS += -mfloat-abi=soft
 CFLAGS += --specs=nano.specs
 CFLAGS += $(MCFLAGS)
-	
+
+################ Target Platform Flags (uncomment one) ######################
+CFLAGS += -DUSER_DEFAULT_PLATFORM		# Default example from the repository
+#CFLAGS += -DDSO138_PLATFORM		    # DSO138 oscilloscope (jyetech.com/dso-138-oscilloscope-diy-kit/)
 
 ############# CFLAGS for Optimization ##################
 CFLAGS += -O0
