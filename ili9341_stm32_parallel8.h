@@ -87,26 +87,54 @@ SOFTWARE.
 #define ILI_PWCTR6  0xFC
 */
 
-// Color definitions
-#define ILI_COLOR_BLACK       0x0000  ///<   0,   0,   0
-#define ILI_COLOR_NAVY        0x000F  ///<   0,   0, 123
-#define ILI_COLOR_DARKGREEN   0x03E0  ///<   0, 125,   0
-#define ILI_COLOR_DARKCYAN    0x03EF  ///<   0, 125, 123
-#define ILI_COLOR_MAROON      0x7800  ///< 123,   0,   0
-#define ILI_COLOR_PURPLE      0x780F  ///< 123,   0, 123
-#define ILI_COLOR_OLIVE       0x7BE0  ///< 123, 125,   0
-#define ILI_COLOR_LIGHTGREY   0xC618  ///< 198, 195, 198
-#define ILI_COLOR_DARKGREY    0x7BEF  ///< 123, 125, 123
-#define ILI_COLOR_BLUE        0x001F  ///<   0,   0, 255
-#define ILI_COLOR_GREEN       0x07E0  ///<   0, 255,   0
-#define ILI_COLOR_CYAN        0x07FF  ///<   0, 255, 255
-#define ILI_COLOR_RED         0xF800  ///< 255,   0,   0
-#define ILI_COLOR_MAGENTA     0xF81F  ///< 255,   0, 255
-#define ILI_COLOR_YELLOW      0xFFE0  ///< 255, 255,   0
-#define ILI_COLOR_WHITE       0xFFFF  ///< 255, 255, 255
-#define ILI_COLOR_ORANGE      0xFD20  ///< 255, 165,   0
-#define ILI_COLOR_GREENYELLOW 0xAFE5  ///< 173, 255,  41
-#define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
+#ifdef USER_DEFAULT_PLATFORM
+    // Color definitions
+    #define ILI_COLOR_BLACK       0x0000  ///<   0,   0,   0
+    #define ILI_COLOR_NAVY        0x000F  ///<   0,   0, 123
+    #define ILI_COLOR_DARKGREEN   0x03E0  ///<   0, 125,   0
+    #define ILI_COLOR_DARKCYAN    0x03EF  ///<   0, 125, 123
+    #define ILI_COLOR_MAROON      0x7800  ///< 123,   0,   0
+    #define ILI_COLOR_PURPLE      0x780F  ///< 123,   0, 123
+    #define ILI_COLOR_OLIVE       0x7BE0  ///< 123, 125,   0
+    #define ILI_COLOR_LIGHTGREY   0xC618  ///< 198, 195, 198
+    #define ILI_COLOR_DARKGREY    0x7BEF  ///< 123, 125, 123
+    #define ILI_COLOR_BLUE        0x001F  ///<   0,   0, 255
+    #define ILI_COLOR_GREEN       0x07E0  ///<   0, 255,   0
+    #define ILI_COLOR_CYAN        0x07FF  ///<   0, 255, 255
+    #define ILI_COLOR_RED         0xF800  ///< 255,   0,   0
+    #define ILI_COLOR_MAGENTA     0xF81F  ///< 255,   0, 255
+    #define ILI_COLOR_YELLOW      0xFFE0  ///< 255, 255,   0
+    #define ILI_COLOR_WHITE       0xFFFF  ///< 255, 255, 255
+    #define ILI_COLOR_ORANGE      0xFD20  ///< 255, 165,   0
+    #define ILI_COLOR_GREENYELLOW 0xAFE5  ///< 173, 255,  41
+    #define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
+
+#elif DSO138_PLATFORM
+    #define	RB 0  // Red bits position
+    #define	GB 5  // Green bits position
+    #define	BB 11 // Blue bits position
+    #define	RGB(R,G,B) (((R >> 3) << RB) | ((G >> 2) << GB) | ((B >> 3) << BB))
+
+    #define ILI_COLOR_BLACK       RGB(0,     0,   0)
+    #define ILI_COLOR_NAVY        RGB(0,     0, 123)
+    #define ILI_COLOR_DARKGREEN   RGB(0,   125,   0)
+    #define ILI_COLOR_DARKCYAN    RGB(0,   125, 123)
+    #define ILI_COLOR_MAROON      RGB(123,   0,   0)
+    #define ILI_COLOR_PURPLE      RGB(123,   0, 123)
+    #define ILI_COLOR_OLIVE       RGB(123, 125,   0)
+    #define ILI_COLOR_LIGHTGREY   RGB(198, 195, 198)
+    #define ILI_COLOR_DARKGREY    RGB(123, 125, 123)
+    #define ILI_COLOR_BLUE        RGB(0,     0, 255)
+    #define ILI_COLOR_GREEN       RGB(0,   255,   0)
+    #define ILI_COLOR_CYAN        RGB(0,   255, 255)
+    #define ILI_COLOR_RED         RGB(255,   0,   0)
+    #define ILI_COLOR_MAGENTA     RGB(255,   0, 255)
+    #define ILI_COLOR_YELLOW      RGB(255, 255,   0)
+    #define ILI_COLOR_WHITE       RGB(255, 255, 255)
+    #define ILI_COLOR_ORANGE      RGB(255, 165,   0)
+    #define ILI_COLOR_GREENYELLOW RGB(173, 255,  41)
+    #define ILI_COLOR_PINK        RGB(255, 130, 198)
+#endif
 
 /*************************** Pin confirugation START ************************/
 #ifdef USER_DEFAULT_PLATFORM
