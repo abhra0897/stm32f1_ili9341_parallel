@@ -51,7 +51,12 @@ int main(void)
 	//initializing the ili9341 display driver
 	ili_init();
 	//rotating display to potrait mode
+
+#ifdef USER_DEFAULT_PLATFORM
 	ili_rotate_display(1);
+#elif DSO138_PLATFORM
+    ili_rotate_display(0);
+#endif
 
 	// Fiiling the entire screen with cyan color
 	ili_fill_screen(ILI_COLOR_CYAN);
@@ -73,7 +78,7 @@ int main(void)
 
 	// Draw a "thicc" line
 	ili_draw_line(180, 2, 20, 250, 5, ILI_COLOR_BLUE);
-	
+
 	// Draw some individual pixels in random points
 	for (uint16_t i = 0; i < 1000; i++)
 		ili_draw_pixel(rand() % 100 + 120, rand() % 100 + 60, ILI_COLOR_WHITE + rand() % 100 + 60);
