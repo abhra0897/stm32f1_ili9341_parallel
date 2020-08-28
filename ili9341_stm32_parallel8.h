@@ -110,21 +110,22 @@ SOFTWARE.
     #define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
 
 #elif DSO138_PLATFORM
-    #define	R_POS_RGB	11	// Red last bit position for RGB display
-    #define	G_POS_RGB	5 	// Green last bit position for RGB display
+    #define	R_POS_RGB   11	// Red last bit position for RGB display
+    #define	G_POS_RGB   5 	// Green last bit position for RGB display
     #define	B_POS_RGB   0	// Blue last bit position for RGB display
-    #define	RGB(R,G,B) \
-        (((uint16_t)(R >> 3) << R_POS_RGB) | \
-         ((uint16_t)(G >> 2) << G_POS_RGB) | \
-         ((uint16_t)(B >> 3) << B_POS_RGB))
 
-    #define	R_POS_BGR	0	// Red last bit position for BGR display
-    #define	G_POS_BGR	5 	// Green last bit position for BGR display
+    #define	RGB(R,G,B) \
+	(((uint16_t)(R >> 3) << R_POS_RGB) | \
+	 ((uint16_t)(G >> 2) << G_POS_RGB) | \
+	 ((uint16_t)(B >> 3) << B_POS_RGB))
+
+    #define	R_POS_BGR   0	// Red last bit position for BGR display
+    #define	G_POS_BGR   5 	// Green last bit position for BGR display
     #define	B_POS_BGR   11	// Blue last bit position for BGR display
 
     #define	BGR(R,G,B) \
-        (((uint16_t)(R >> 3) << R_POS_BRG) | \
-         ((uint16_t)(G >> 2) << G_POS_BGR) | \
+	(((uint16_t)(R >> 3) << R_POS_BGR) | \
+	 ((uint16_t)(G >> 2) << G_POS_BGR) | \
          ((uint16_t)(B >> 3) << B_POS_BGR))
 
     #define ILI_COLOR_BLACK       BGR(0,     0,   0)
