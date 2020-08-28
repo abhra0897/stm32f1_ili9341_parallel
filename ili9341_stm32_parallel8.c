@@ -401,7 +401,7 @@ void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t
 	ili_draw_fast_h_line(x, y+h, x+w-1, y+h-1, 1, color);
 	ili_draw_fast_v_line(x, y, x-1, y+h-1, 1, color);
 	ili_draw_fast_v_line(x+w, y, x+w-1, y+h-1, 1, color);
-	 
+
 
 }
 
@@ -604,31 +604,40 @@ void ili_rotate_display(uint8_t rotation)
 	* 					2 : Landscape 2
 	* 					3 : Potrait 2
 	*/
+
+#ifdef USER_DEFAULT_PLATFORM
+    uint16_t new_height = 240;
+    uint16_t new_width = 320;
+#elif DSO138_PLATFORM
+    uint16_t new_height = 320;
+    uint16_t new_width = 240;
+#endif
+
 	switch (rotation)
 	{
 		case 0:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0x40);				//MX: 1, MY: 0, MV: 0	(Landscape 1. Default)
-			ili_tftheight = 240;
-			ili_tftwidth = 320;
+			ili_tftheight = new_height;
+			ili_tftwidth = new_width;
 			break;
 		case 1:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0x20);				//MX: 0, MY: 0, MV: 1	(Potrait 1)
-			ili_tftheight = 320;
-			ili_tftwidth = 240;
+			ili_tftheight = new_width;
+			ili_tftwidth = new_height;
 			break;
 		case 2:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0x80);				//MX: 0, MY: 1, MV: 0	(Landscape 2)
-			ili_tftheight = 240;
-			ili_tftwidth = 320;
+			ili_tftheight = new_height;
+			ili_tftwidth = new_width;
 			break;
 		case 3:
 			write_command_8bit(ILI_MADCTL);		//Memory Access Control
 			write_data_8bit(0xE0);				//MX: 1, MY: 1, MV: 1	(Potrait 2)
-			ili_tftheight = 320;
-			ili_tftwidth = 240;
+			ili_tftheight = new_width;
+			ili_tftwidth = new_height;
 			break;
 	}
 }
@@ -648,7 +657,7 @@ void ili_init()
 	RST_IDLE;
 	RST_ACTIVE;
 	RST_IDLE;
-	
+
 	// Approx 10ms delay at 128MHz clock
 	for (uint32_t i = 0; i < 2000000; i++)
 		__asm__("nop");

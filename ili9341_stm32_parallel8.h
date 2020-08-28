@@ -88,63 +88,162 @@ SOFTWARE.
 */
 
 
-// Color definitions
-#define ILI_COLOR_BLACK       0x0000  ///<   0,   0,   0
-#define ILI_COLOR_NAVY        0x000F  ///<   0,   0, 123
-#define ILI_COLOR_DARKGREEN   0x03E0  ///<   0, 125,   0
-#define ILI_COLOR_DARKCYAN    0x03EF  ///<   0, 125, 123
-#define ILI_COLOR_MAROON      0x7800  ///< 123,   0,   0
-#define ILI_COLOR_PURPLE      0x780F  ///< 123,   0, 123
-#define ILI_COLOR_OLIVE       0x7BE0  ///< 123, 125,   0
-#define ILI_COLOR_LIGHTGREY   0xC618  ///< 198, 195, 198
-#define ILI_COLOR_DARKGREY    0x7BEF  ///< 123, 125, 123
-#define ILI_COLOR_BLUE        0x001F  ///<   0,   0, 255
-#define ILI_COLOR_GREEN       0x07E0  ///<   0, 255,   0
-#define ILI_COLOR_CYAN        0x07FF  ///<   0, 255, 255
-#define ILI_COLOR_RED         0xF800  ///< 255,   0,   0
-#define ILI_COLOR_MAGENTA     0xF81F  ///< 255,   0, 255
-#define ILI_COLOR_YELLOW      0xFFE0  ///< 255, 255,   0
-#define ILI_COLOR_WHITE       0xFFFF  ///< 255, 255, 255
-#define ILI_COLOR_ORANGE      0xFD20  ///< 255, 165,   0
-#define ILI_COLOR_GREENYELLOW 0xAFE5  ///< 173, 255,  41
-#define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
+#define	R_POS_RGB   11	// Red last bit position for RGB display
+#define	G_POS_RGB   5 	// Green last bit position for RGB display
+#define	B_POS_RGB   0	// Blue last bit position for RGB display
 
+#define	RGB(R,G,B) \
+	(((uint16_t)(R >> 3) << R_POS_RGB) | \
+	((uint16_t)(G >> 2) << G_POS_RGB) | \
+	((uint16_t)(B >> 3) << B_POS_RGB))
 
-/**
- * Pin mapping:
- * ILI9341				STM32
- * ---------------------------
-* 		--Data--
- * DB10					PA0
- * DB11					PA1
- * ..					..
- * DB17					PA7
- *
- *		--Control--
- * RESETn				PB0
- * CSn					PB1
- * D/Cn					PB5#include <libopencm3/stm32/rcc.h>
- * WRn					PB4
- * RDn					PB3
+#define	R_POS_BGR   0	// Red last bit position for BGR display
+#define	G_POS_BGR   5 	// Green last bit position for BGR display
+#define	B_POS_BGR   11	// Blue last bit position for BGR display
+
+#define	BGR(R,G,B) \
+	(((uint16_t)(R >> 3) << R_POS_BGR) | \
+	((uint16_t)(G >> 2) << G_POS_BGR) | \
+	((uint16_t)(B >> 3) << B_POS_BGR))
+
+#ifdef USER_DEFAULT_PLATFORM
+    // Color definitions
+    #define ILI_COLOR_BLACK       RGB(0,     0,   0)
+    #define ILI_COLOR_NAVY        RGB(0,     0, 123)
+    #define ILI_COLOR_DARKGREEN   RGB(0,   125,   0)
+    #define ILI_COLOR_DARKCYAN    RGB(0,   125, 123)
+    #define ILI_COLOR_MAROON      RGB(123,   0,   0)
+    #define ILI_COLOR_PURPLE      RGB(123,   0, 123)
+    #define ILI_COLOR_OLIVE       RGB(123, 125,   0)
+    #define ILI_COLOR_LIGHTGREY   RGB(198, 195, 198)
+    #define ILI_COLOR_DARKGREY    RGB(123, 125, 123)
+    #define ILI_COLOR_BLUE        RGB(0,     0, 255)
+    #define ILI_COLOR_GREEN       RGB(0,   255,   0)
+    #define ILI_COLOR_CYAN        RGB(0,   255, 255)
+    #define ILI_COLOR_RED         RGB(255,   0,   0)
+    #define ILI_COLOR_MAGENTA     RGB(255,   0, 255)
+    #define ILI_COLOR_YELLOW      RGB(255, 255,   0)
+    #define ILI_COLOR_WHITE       RGB(255, 255, 255)
+    #define ILI_COLOR_ORANGE      RGB(255, 165,   0)
+    #define ILI_COLOR_GREENYELLOW RGB(173, 255,  41)
+    #define ILI_COLOR_PINK        RGB(255, 130, 198)
+
+#elif DSO138_PLATFORM
+    
+    #define ILI_COLOR_BLACK       BGR(0,     0,   0)
+    #define ILI_COLOR_NAVY        BGR(0,     0, 123)
+    #define ILI_COLOR_DARKGREEN   BGR(0,   125,   0)
+    #define ILI_COLOR_DARKCYAN    BGR(0,   125, 123)
+    #define ILI_COLOR_MAROON      BGR(123,   0,   0)
+    #define ILI_COLOR_PURPLE      BGR(123,   0, 123)
+    #define ILI_COLOR_OLIVE       BGR(123, 125,   0)
+    #define ILI_COLOR_LIGHTGREY   BGR(198, 195, 198)
+    #define ILI_COLOR_DARKGREY    BGR(123, 125, 123)
+    #define ILI_COLOR_BLUE        BGR(0,     0, 255)
+    #define ILI_COLOR_GREEN       BGR(0,   255,   0)
+    #define ILI_COLOR_CYAN        BGR(0,   255, 255)
+    #define ILI_COLOR_RED         BGR(255,   0,   0)
+    #define ILI_COLOR_MAGENTA     BGR(255,   0, 255)
+    #define ILI_COLOR_YELLOW      BGR(255, 255,   0)
+    #define ILI_COLOR_WHITE       BGR(255, 255, 255)
+    #define ILI_COLOR_ORANGE      BGR(255, 165,   0)
+    #define ILI_COLOR_GREENYELLOW BGR(173, 255,  41)
+    #define ILI_COLOR_PINK        BGR(255, 130, 198)
+#endif
+
+/*************************** Pin confirugation START ************************/
+#ifdef USER_DEFAULT_PLATFORM
+	/*
+	* Pin mapping:
+	* ILI9341				STM32
+	* ---------------------------
+	* 		--Data--
+	* DB10					PA0
+	* DB11					PA1
+	* ..					..
+	* DB17					PA7
+	*
+	*		--Control--
+	* RESETn				PB0
+	* CSn					PB1
+	* D/Cn					PB5#include <libopencm3/stm32/rcc.h>
+	* WRn					PB4
+	* RDn					PB3
+	*/
+	#define ILI_PORT_DATA	GPIOA
+	#define ILI_D0  		GPIO0
+	#define ILI_D1  		GPIO1
+	#define ILI_D2          GPIO2
+	#define ILI_D3  		GPIO3
+	#define ILI_D4			GPIO4
+	#define ILI_D5			GPIO5
+	#define ILI_D6			GPIO6
+	#define ILI_D7			GPIO7
+	#define ILI_PORT_CTRL	GPIOB
+	#define ILI_RST			GPIO0
+	#define ILI_CS			GPIO1
+	#define ILI_DC			GPIO5
+	#define ILI_WR			GPIO4
+	#define ILI_RD			GPIO3
+	#define JTAG_REMAPPING_MODE AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST /* See below */
+
+#elif DSO138_PLATFORM
+	#define ILI_PORT_DATA	GPIOB
+	#define ILI_D0			GPIO0
+	#define ILI_D1			GPIO1
+	#define ILI_D2			GPIO2
+	#define ILI_D3			GPIO3
+	#define ILI_D4			GPIO4
+	#define ILI_D5			GPIO5
+	#define ILI_D6			GPIO6
+	#define ILI_D7			GPIO7
+	#define ILI_PORT_CTRL_B	GPIOB
+	#define ILI_RD			GPIO10
+	#define ILI_RST			GPIO11
+	#define ILI_PORT_CTRL_C	GPIOC
+	#define ILI_CS			GPIO13
+	#define ILI_DC			GPIO14
+	#define ILI_WR			GPIO15
+	#define JTAG_REMAPPING_MODE AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF /* See below */
+#endif
+/*
+Possible values of JTAG_REMAPPING_MODE:
+AFIO_MAPR_SWJ_CFG_FULL_SWJ: Full Serial Wire JTAG capability
+AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST: Full Serial Wire JTAG capability without JNTRST (PB4 as GPIO)
+AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON: JTAG-DP disabled with SW-DP enabled
+AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
+*/
+
+/*
+ * >>>>>> ATTENTION: if there are other ports in use, e.g. GPIOC, <<<<<<
+ * >>>>>>   please, update CONFIG_GPIO_CLOCK() and CONFIG_GPIO()  <<<<<<
+ * >>>>>>              macros below accordingly.                  <<<<<<
  */
-#define ILI_PORT_DATA	GPIOA
-#define ILI_PORT_CTRL	GPIOB
-#define ILI_RST			GPIO0
-#define ILI_CS			GPIO1
-#define ILI_DC			GPIO5
-#define ILI_WR			GPIO4
-#define ILI_RD			GPIO3
+/*************************** Pin confirugation END ************************/
 
-#define RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
-#define RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
-#define WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_WR
-#define WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_WR
-#define DC_CMD			GPIO_BRR(ILI_PORT_CTRL) = ILI_DC
-#define DC_DAT			GPIO_BSRR(ILI_PORT_CTRL) = ILI_DC
-#define CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_CS
-#define CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_CS
-#define RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RST
-#define RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL) = ILI_RST
+#ifdef USER_DEFAULT_PLATFORM
+	#define RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
+	#define RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
+	#define WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_WR
+	#define WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_WR
+	#define DC_CMD			GPIO_BRR(ILI_PORT_CTRL) = ILI_DC
+	#define DC_DAT			GPIO_BSRR(ILI_PORT_CTRL) = ILI_DC
+	#define CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_CS
+	#define CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_CS
+	#define RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RST
+	#define RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL) = ILI_RST
+#elif DSO138_PLATFORM
+	#define RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_B) = ILI_RD
+	#define RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL_B) = ILI_RD
+	#define WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_C) = ILI_WR
+	#define WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL_C) = ILI_WR
+	#define DC_CMD			GPIO_BRR(ILI_PORT_CTRL_C) = ILI_DC
+	#define DC_DAT			GPIO_BSRR(ILI_PORT_CTRL_C) = ILI_DC
+	#define CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_C) = ILI_CS
+	#define CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL_C) = ILI_CS
+	#define RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_B) = ILI_RST
+	#define RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL_B) = ILI_RST
+#endif
 
 #define WR_STROBE		{WR_ACTIVE; WR_IDLE;}
 #define RD_STROBE		{RD_ACTIVE; RD_IDLE;}
@@ -152,22 +251,72 @@ SOFTWARE.
 #define WRITE_8BIT(d)	{GPIO_BSRR(ILI_PORT_DATA) = (uint32_t)(0x00FF0000 | ((d) & 0xFF)); WR_STROBE;}
 #define READ_8BIT(d)	{d = (uint8_t)(GPIO_IDR(ILI_PORT_DATA) & 0x00FF;}
 
-#define CONFIG_GPIO_CLOCK()	    { \
-									rcc_periph_clock_enable(RCC_GPIOB); \
-									rcc_periph_clock_enable(RCC_GPIOA); \
-									rcc_periph_clock_enable(RCC_AFIO); \
-								}
-#define CONFIG_GPIO()			{ \
-									/*Configure GPIO pins : PA0 PA1 PA2 PA3 PA4 PA5 PA6 PA7 */ \
-									gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0|GPIO1|GPIO2|GPIO3|GPIO4|GPIO5|GPIO6|GPIO7); \
-									/*Configure GPIO pins : PB0 PB1 PB3 PB4 PB5 PB8 */ \
-									gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0|GPIO1|GPIO3|GPIO4|GPIO5|GPIO8); \
-									/*Configure GPIO pin Output Level */ \
-									gpio_set(GPIOA, GPIO0|GPIO1|GPIO2|GPIO3|GPIO4|GPIO5|GPIO6|GPIO7); \
-									gpio_set(GPIOB, GPIO0|GPIO1|GPIO3|GPIO4|GPIO5|GPIO8); \
-									/* Configures PB4 as GPIO */ \
-									AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST; \
-								}
+#ifdef USER_DEFAULT_PLATFORM
+	#define CONFIG_GPIO_CLOCK()	    { \
+										rcc_periph_clock_enable(RCC_GPIOB); \
+										rcc_periph_clock_enable(RCC_GPIOA); \
+										rcc_periph_clock_enable(RCC_AFIO); \
+									}
+	#define CONFIG_GPIO()			{ \
+										/*Configure ILI_PORT_DATA GPIO pins */ \
+										gpio_set_mode( \
+											ILI_PORT_DATA, \
+											GPIO_MODE_OUTPUT_50_MHZ, \
+											GPIO_CNF_OUTPUT_PUSHPULL, \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
+										/*Configure ILI_PORT_CTRL GPIO pins */ \
+										gpio_set_mode(ILI_PORT_CTRL, \
+											GPIO_MODE_OUTPUT_50_MHZ, \
+											GPIO_CNF_OUTPUT_PUSHPULL, \
+											ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
+										/*Configure GPIO pin Output Level */ \
+										gpio_set( \
+											ILI_PORT_DATA, \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
+										gpio_set( \
+											ILI_PORT_CTRL, \
+											ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
+										/* Remap JTAG pins */ \
+										AFIO_MAPR |= JTAG_REMAPPING_MODE; \
+									}
+#elif DSO138_PLATFORM
+	#define CONFIG_GPIO_CLOCK()	    { \
+										rcc_periph_clock_enable(RCC_GPIOB); \
+										rcc_periph_clock_enable(RCC_GPIOA); \
+										rcc_periph_clock_enable(RCC_GPIOC); \
+										rcc_periph_clock_enable(RCC_AFIO); \
+									}
+	#define CONFIG_GPIO()			{ \
+										/*Configure ILI_PORT_DATA GPIO pins */ \
+										gpio_set_mode( \
+											ILI_PORT_DATA, \
+											GPIO_MODE_OUTPUT_50_MHZ, \
+											GPIO_CNF_OUTPUT_PUSHPULL, \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
+										/*Configure ILI_PORT_CTRL_B GPIO pins */ \
+										gpio_set_mode(ILI_PORT_CTRL_B, \
+											GPIO_MODE_OUTPUT_50_MHZ, \
+											GPIO_CNF_OUTPUT_PUSHPULL, \
+											ILI_RD | ILI_RST); \
+										/*Configure ILI_PORT_CTRL_C GPIO pins */ \
+										gpio_set_mode(ILI_PORT_CTRL_C, \
+											GPIO_MODE_OUTPUT_50_MHZ, \
+											GPIO_CNF_OUTPUT_PUSHPULL, \
+											ILI_CS | ILI_DC | ILI_WR); \
+										/*Configure GPIO pin Output Level */ \
+										gpio_set( \
+											ILI_PORT_DATA, \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
+										gpio_set( \
+											ILI_PORT_CTRL_B, \
+											ILI_RD | ILI_RST); \
+										gpio_set( \
+											ILI_PORT_CTRL_C, \
+											ILI_CS | ILI_DC | ILI_WR); \
+										/* Remap JTAG pins */ \
+										AFIO_MAPR |= JTAG_REMAPPING_MODE; \
+									}
+#endif
 
 #define SWAP(a, b)		{uint16_t temp; temp = a; a = b; b = temp;}
 
@@ -306,7 +455,7 @@ void ili_fill_rect_fast(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t
 void ili_fill_screen(uint16_t color);
 
 /*
- * Rener a character glyph on the display. Called by `ili_draw_string_main()`
+ * Render a character glyph on the display. Called by `ili_draw_string_main()`
  * User need NOT call it
  */
 void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_color, const tImage *glyph, uint8_t is_bg);

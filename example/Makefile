@@ -4,8 +4,9 @@
 
 TARGET=main
 
-
-TOOLCHAIN_PREFIX=~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi
+# Uncomment needed toolchain configuration line
+#TOOLCHAIN_PREFIX=~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi
+TOOLCHAIN_PREFIX=arm-none-eabi
 
 CC=$(TOOLCHAIN_PREFIX)-gcc
 LD=$(TOOLCHAIN_PREFIX)-gcc
@@ -40,7 +41,10 @@ CFLAGS += -mlittle-endian -mthumb -mthumb-interwork
 CFLAGS += -mfloat-abi=soft
 CFLAGS += --specs=nano.specs
 CFLAGS += $(MCFLAGS)
-	
+
+################ Target Platform Flags (uncomment one) ######################
+CFLAGS += -DUSER_DEFAULT_PLATFORM		# Default example from the repository
+#CFLAGS += -DDSO138_PLATFORM		    # DSO138 oscilloscope (jyetech.com/dso-138-oscilloscope-diy-kit/)
 
 ############# CFLAGS for Optimization ##################
 CFLAGS += -O0
@@ -60,8 +64,7 @@ LFLAGS += -nostartfiles #We're using no start file. Without this flag, get linke
 
 ################### Recipe to make all (build and burn) ####################
 .PHONY: all
-all: build burn
-
+all: build
 
 ################### Recipe to build ####################
 .PHONY: build
