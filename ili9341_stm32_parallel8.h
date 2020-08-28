@@ -110,30 +110,42 @@ SOFTWARE.
     #define ILI_COLOR_PINK        0xFC18  ///< 255, 130, 198
 
 #elif DSO138_PLATFORM
-    #define	RB 0  // Red bits position
-    #define	GB 5  // Green bits position
-    #define	BB 11 // Blue bits position
-    #define	RGB(R,G,B) (((R >> 3) << RB) | ((G >> 2) << GB) | ((B >> 3) << BB))
+    #define	R_POS_RGB	11	// Red last bit position for RGB display
+    #define	G_POS_RGB	5 	// Green last bit position for RGB display
+    #define	B_POS_RGB   0	// Blue last bit position for RGB display
+    #define	RGB(R,G,B) \
+        (((uint16_t)(R >> 3) << R_POS_RGB) | \
+         ((uint16_t)(G >> 2) << G_POS_RGB) | \
+         ((uint16_t)(B >> 3) << B_POS_RGB))
 
-    #define ILI_COLOR_BLACK       RGB(0,     0,   0)
-    #define ILI_COLOR_NAVY        RGB(0,     0, 123)
-    #define ILI_COLOR_DARKGREEN   RGB(0,   125,   0)
-    #define ILI_COLOR_DARKCYAN    RGB(0,   125, 123)
-    #define ILI_COLOR_MAROON      RGB(123,   0,   0)
-    #define ILI_COLOR_PURPLE      RGB(123,   0, 123)
-    #define ILI_COLOR_OLIVE       RGB(123, 125,   0)
-    #define ILI_COLOR_LIGHTGREY   RGB(198, 195, 198)
-    #define ILI_COLOR_DARKGREY    RGB(123, 125, 123)
-    #define ILI_COLOR_BLUE        RGB(0,     0, 255)
-    #define ILI_COLOR_GREEN       RGB(0,   255,   0)
-    #define ILI_COLOR_CYAN        RGB(0,   255, 255)
-    #define ILI_COLOR_RED         RGB(255,   0,   0)
-    #define ILI_COLOR_MAGENTA     RGB(255,   0, 255)
-    #define ILI_COLOR_YELLOW      RGB(255, 255,   0)
-    #define ILI_COLOR_WHITE       RGB(255, 255, 255)
-    #define ILI_COLOR_ORANGE      RGB(255, 165,   0)
-    #define ILI_COLOR_GREENYELLOW RGB(173, 255,  41)
-    #define ILI_COLOR_PINK        RGB(255, 130, 198)
+    #define	R_POS_BGR	0	// Red last bit position for BGR display
+    #define	G_POS_BGR	5 	// Green last bit position for BGR display
+    #define	B_POS_BGR   11	// Blue last bit position for BGR display
+
+    #define	BGR(R,G,B) \
+        (((uint16_t)(R >> 3) << R_POS_BRG) | \
+         ((uint16_t)(G >> 2) << G_POS_BGR) | \
+         ((uint16_t)(B >> 3) << B_POS_BGR))
+
+    #define ILI_COLOR_BLACK       BGR(0,     0,   0)
+    #define ILI_COLOR_NAVY        BGR(0,     0, 123)
+    #define ILI_COLOR_DARKGREEN   BGR(0,   125,   0)
+    #define ILI_COLOR_DARKCYAN    BGR(0,   125, 123)
+    #define ILI_COLOR_MAROON      BGR(123,   0,   0)
+    #define ILI_COLOR_PURPLE      BGR(123,   0, 123)
+    #define ILI_COLOR_OLIVE       BGR(123, 125,   0)
+    #define ILI_COLOR_LIGHTGREY   BGR(198, 195, 198)
+    #define ILI_COLOR_DARKGREY    BGR(123, 125, 123)
+    #define ILI_COLOR_BLUE        BGR(0,     0, 255)
+    #define ILI_COLOR_GREEN       BGR(0,   255,   0)
+    #define ILI_COLOR_CYAN        BGR(0,   255, 255)
+    #define ILI_COLOR_RED         BGR(255,   0,   0)
+    #define ILI_COLOR_MAGENTA     BGR(255,   0, 255)
+    #define ILI_COLOR_YELLOW      BGR(255, 255,   0)
+    #define ILI_COLOR_WHITE       BGR(255, 255, 255)
+    #define ILI_COLOR_ORANGE      BGR(255, 165,   0)
+    #define ILI_COLOR_GREENYELLOW BGR(173, 255,  41)
+    #define ILI_COLOR_PINK        BGR(255, 130, 198)
 #endif
 
 /*************************** Pin confirugation START ************************/
@@ -156,14 +168,14 @@ SOFTWARE.
 	* RDn					PB3
 	*/
 	#define ILI_PORT_DATA	GPIOA
-	#define DATA_0			GPIO0
-	#define DATA_1			GPIO1
-	#define DATA_2			GPIO2
-	#define DATA_3			GPIO3
-	#define DATA_4			GPIO4
-	#define DATA_5			GPIO5
-	#define DATA_6			GPIO6
-	#define DATA_7			GPIO7
+	#define ILI_D0  		GPIO0
+	#define ILI_D1  		GPIO1
+	#define ILI_D2          GPIO2
+	#define ILI_D3  		GPIO3
+	#define ILI_D4			GPIO4
+	#define ILI_D5			GPIO5
+	#define ILI_D6			GPIO6
+	#define ILI_D7			GPIO7
 	#define ILI_PORT_CTRL	GPIOB
 	#define ILI_RST			GPIO0
 	#define ILI_CS			GPIO1
@@ -174,14 +186,14 @@ SOFTWARE.
 
 #elif DSO138_PLATFORM
 	#define ILI_PORT_DATA	GPIOB
-	#define DATA_0			GPIO0
-	#define DATA_1			GPIO1
-	#define DATA_2			GPIO2
-	#define DATA_3			GPIO3
-	#define DATA_4			GPIO4
-	#define DATA_5			GPIO5
-	#define DATA_6			GPIO6
-	#define DATA_7			GPIO7
+	#define ILI_D0			GPIO0
+	#define ILI_D1			GPIO1
+	#define ILI_D2			GPIO2
+	#define ILI_D3			GPIO3
+	#define ILI_D4			GPIO4
+	#define ILI_D5			GPIO5
+	#define ILI_D6			GPIO6
+	#define ILI_D7			GPIO7
 	#define ILI_PORT_CTRL_B	GPIOB
 	#define ILI_RD			GPIO10
 	#define ILI_RST			GPIO11
@@ -248,7 +260,7 @@ AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
 											ILI_PORT_DATA, \
 											GPIO_MODE_OUTPUT_50_MHZ, \
 											GPIO_CNF_OUTPUT_PUSHPULL, \
-											DATA_0 | DATA_1 | DATA_2 | DATA_3 | DATA_4 | DATA_5 | DATA_6 | DATA_7); \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
 										/*Configure ILI_PORT_CTRL GPIO pins */ \
 										gpio_set_mode(ILI_PORT_CTRL, \
 											GPIO_MODE_OUTPUT_50_MHZ, \
@@ -257,7 +269,7 @@ AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
 										/*Configure GPIO pin Output Level */ \
 										gpio_set( \
 											ILI_PORT_DATA, \
-											DATA_0 | DATA_1 | DATA_2 | DATA_3 | DATA_4 | DATA_5 | DATA_6 | DATA_7); \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
 										gpio_set( \
 											ILI_PORT_CTRL, \
 											ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
@@ -277,7 +289,7 @@ AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
 											ILI_PORT_DATA, \
 											GPIO_MODE_OUTPUT_50_MHZ, \
 											GPIO_CNF_OUTPUT_PUSHPULL, \
-											DATA_0 | DATA_1 | DATA_2 | DATA_3 | DATA_4 | DATA_5 | DATA_6 | DATA_7); \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
 										/*Configure ILI_PORT_CTRL_B GPIO pins */ \
 										gpio_set_mode(ILI_PORT_CTRL_B, \
 											GPIO_MODE_OUTPUT_50_MHZ, \
@@ -291,7 +303,7 @@ AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
 										/*Configure GPIO pin Output Level */ \
 										gpio_set( \
 											ILI_PORT_DATA, \
-											DATA_0 | DATA_1 | DATA_2 | DATA_3 | DATA_4 | DATA_5 | DATA_6 | DATA_7); \
+											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
 										gpio_set( \
 											ILI_PORT_CTRL_B, \
 											ILI_RD | ILI_RST); \
