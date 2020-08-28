@@ -2,7 +2,9 @@
 
 
 ## ILI9341 Parallel Display Driver for STM32F1
-This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II) bus. It's mainly written for my personal usage.
+This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II/I) bus. It's mainly written for my personal usage.
+
+[Vitasam](https://github.com/vitasam) added support for JYETech [DSO138](jyetech.com/dso-138-oscilloscope-diy-kit/) oscilloscope.
 
 GPIOs are handled by direct register manipulation for faster performance. *This driver now configures the used GPIOs, so user need not do it anymore*.
 
@@ -95,7 +97,8 @@ TBD
 
 ### Example
 Example code (**[main.c](example/main.c)**) is in **[example](example)** directory. To compile using the provided [Makefile](example/Makefile), keep the directory structure as it is. If you change the directory structure, edit the SRCS, INCLS, and LIBS in the Makefile accordingly.
-Example is compiled and tested on STM32F103 (overclocked to 128MHz)
+Example is compiled and tested on STM32F103 (overclocked to 128MHz).
+Note: To compile for DSO138, comment out `CFLAGS += -DUSER_DEFAULT_PLATFORM` and uncomment `CFLAGS += -DDSO138_PLATFORM` in the Makefile.
 
 ![Output of example code](example/photo/example_output.gif)
 
