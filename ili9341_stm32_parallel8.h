@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 #include "bitmap_typedefs.h"
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
@@ -30,6 +29,7 @@ SOFTWARE.
 #ifndef INC_ILI9341_STM32_PARALLEL8_H_
 #define INC_ILI9341_STM32_PARALLEL8_H_
 
+#define UNUSED(x) (void)(x)
 
 #define ILI_NOP     0x00
 #define ILI_SWRESET 0x01
@@ -468,7 +468,7 @@ void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_co
  * is_bg=1 : Text will habe background color,   is_bg=0 : Text will have transparent background
  * User need NOT call it.
  */
-void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font, uint8_t is_bg);
+void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, const tFont *font, uint8_t is_bg);
 
 /**
  * Draws a string on the display with `font` and `color` at given position.
@@ -479,7 +479,7 @@ void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color
  * @param color 16-bit RGB565 color of the string
  * @param font Pointer to the font of the string
  */
-void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, tFont *font);
+void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, const tFont *font);
 
 /**
  * Draws a string on the display with `font`, `fore_color`, and `back_color` at given position.
@@ -491,7 +491,7 @@ void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, tFont *f
  * @param back_color 16-bit RGB565 color of the string's background
  * @param font Pointer to the font of the string
  */
-void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font);
+void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, const tFont *font);
 
 /**
  * Draw a bitmap image on the display

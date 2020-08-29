@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
+#include <stdlib.h>
 #include <ili9341_stm32_parallel8.h>
 
 //TFT width and height default global variables
@@ -142,7 +142,7 @@ void ili_draw_char(uint16_t x, uint16_t y, uint16_t fore_color, uint16_t back_co
  * User need NOT call it.
  */
 
-void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font, uint8_t is_bg)
+void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, const tFont *font, uint8_t is_bg)
 {
 	uint16_t x_temp = x;
 	uint16_t y_temp = y;
@@ -210,7 +210,7 @@ void ili_draw_string_main(uint16_t x, uint16_t y, char *str, uint16_t fore_color
  * @param color 16-bit RGB565 color of the string
  * @param font Pointer to the font of the string
  */
-void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, tFont *font)
+void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, const tFont *font)
 {
 	ili_draw_string_main(x, y, str, color, 0, font, 0);
 }
@@ -226,7 +226,7 @@ void ili_draw_string(uint16_t x, uint16_t y, char *str, uint16_t color, tFont *f
  * @param back_color 16-bit RGB565 color of the string's background
  * @param font Pointer to the font of the string
  */
-void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, tFont *font)
+void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_color, uint16_t back_color, const tFont *font)
 {
 	ili_draw_string_main(x, y, str, fore_color, back_color, font, 1);
 }
@@ -550,7 +550,7 @@ void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, ui
 	/*
 	* Draw a horizontal line very fast
 	*/
-
+	UNUSED(y1);
 	ili_set_address_window(x0, y0, x1, y0+width-1);	//as it's horizontal line, y1=y0.. must be.
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(x1 - x0 + 1));
 }
@@ -565,7 +565,7 @@ void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, ui
 	/*
 	* Draw a vertical line very fast
 	*/
-
+	UNUSED(x1);
 	ili_set_address_window(x0, y0, x0+width-1, y1);	//as it's vertical line, x1=x0.. must be.
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(y1 - y0 + 1));
 }

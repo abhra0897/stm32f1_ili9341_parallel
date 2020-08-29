@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/flash.h>
 #include "font_microsoft_16.h"
 #include "ili9341_stm32_parallel8.h"
 
