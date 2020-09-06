@@ -29,7 +29,7 @@ SRCS += ../libopencm3/lib/cm3/vector.c
 ################## Includes ########################
 INCLS = -I..
 INCLS += -I../libopencm3/include
-INCLS += -I../FontsEmbedded
+INCLS += -I../fonts
 ################## Libs ########################
 LIBS = -L../libopencm3/lib
 LIBS +=	-lopencm3_stm32f1
