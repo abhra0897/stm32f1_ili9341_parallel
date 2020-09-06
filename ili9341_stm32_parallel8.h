@@ -22,14 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "bitmap_typedefs.h"
+#include "fonts/bitmap_typedefs.h"
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
 
 #ifndef INC_ILI9341_STM32_PARALLEL8_H_
 #define INC_ILI9341_STM32_PARALLEL8_H_
-
-#define UNUSED(x) (void)(x)
 
 #define ILI_NOP     0x00
 #define ILI_SWRESET 0x01
@@ -413,13 +411,13 @@ void plot_line_high(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t 
  * Called by ili_draw_line().
  * User need not call it
  */
-void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint8_t width, uint16_t color);
 
 /*
  * Called by ili_draw_line().
  * User need not call it
  */
-void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color);
+void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t y1, uint8_t width, uint16_t color);
 
 /**
  * Rotate the display clockwise or anti-clockwie set by `rotation`

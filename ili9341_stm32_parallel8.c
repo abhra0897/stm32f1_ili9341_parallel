@@ -397,10 +397,10 @@ void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t
 	if (y + h - 1 >= ili_tftheight)
 		h = ili_tftheight - y;
 
-	ili_draw_fast_h_line(x, y, x+w-1, y-1, 1, color);
-	ili_draw_fast_h_line(x, y+h, x+w-1, y+h-1, 1, color);
-	ili_draw_fast_v_line(x, y, x-1, y+h-1, 1, color);
-	ili_draw_fast_v_line(x+w, y, x+w-1, y+h-1, 1, color);
+	ili_draw_fast_h_line(x, y, x+w-1, 1, color);
+	ili_draw_fast_h_line(x, y+h, x+w-1, 1, color);
+	ili_draw_fast_v_line(x, y, y+h-1, 1, color);
+	ili_draw_fast_v_line(x+w, y, y+h-1, 1, color);
 
 
 }
@@ -512,11 +512,11 @@ void ili_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t w
 
 	if (x0 == x1)	//vertical line
 	{
-		ili_draw_fast_v_line(x0, y0, x1, y1, width, color);
+		ili_draw_fast_v_line(x0, y0, y1, width, color);
 	}
 	else if (y0 == y1)		//horizontal line
 	{
-		ili_draw_fast_h_line(x0, y0, x1, y1, width, color);
+		ili_draw_fast_h_line(x0, y0, x1, width, color);
 	}
 
 	else
@@ -545,12 +545,11 @@ void ili_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t w
  * Called by ili_draw_line().
  * User need not call it
  */
-void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
+void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint8_t width, uint16_t color)
 {
 	/*
 	* Draw a horizontal line very fast
 	*/
-	UNUSED(y1);
 	ili_set_address_window(x0, y0, x1, y0+width-1);	//as it's horizontal line, y1=y0.. must be.
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(x1 - x0 + 1));
 }
@@ -560,12 +559,11 @@ void ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, ui
  * Called by ili_draw_line().
  * User need not call it
  */
-void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t width, uint16_t color)
+void ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t y1, uint8_t width, uint16_t color)
 {
 	/*
 	* Draw a vertical line very fast
 	*/
-	UNUSED(x1);
 	ili_set_address_window(x0, y0, x0+width-1, y1);	//as it's vertical line, x1=x0.. must be.
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(y1 - y0 + 1));
 }
