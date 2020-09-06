@@ -10,7 +10,7 @@
             "compilerPath": "/home/rik/Toolchains/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi-gcc",
             "includePath": [
                 "libopencm3/include",
-                "FontsEmbedded",
+                "fonts",
                 "."
             ]
         }
