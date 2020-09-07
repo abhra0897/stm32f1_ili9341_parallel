@@ -181,6 +181,18 @@ void ili_fill_screen(uint16_t color);
 void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 /**
+ * Draws a character at a given position, fore color, back color.
+ * @param x Start col address
+ * @param y Start row address
+ * @param character the ASCII character to be drawn
+ * @param fore_color foreground color
+ * @param back_color background color
+ * @param font Pointer to the font of the character
+ * @param is_bg Defines if character has background or not (transparent)
+ */
+void ili_draw_char(uint16_t x, uint16_t y, char character, uint16_t fore_color, uint16_t back_color, const tFont *font, uint8_t is_bg)
+
+/**
  * Draws a string on the display with `font` and `color` at given position.
  * Background of this string is transparent
  * @param x Start col address
@@ -224,9 +236,7 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
  - [x] Add example code(s) and write some docs
  - [x] Write better comments
  - [x] Explain how to create fonts
- - [ ] Optimize driver for speed and size. Speed is the first priority
- - [ ] Add ability to read from the display
- - [ ] Circle drawing support (maybe)
+ - [x] Optimize driver for speed and size. Speed is the first priority (improved speed)
 
 ### License
 **[libopencm3](libopencm3)** and any derivative of the same are licensed under the terms of the GNU Lesser General Public License (LGPL), version 3 or later. The binaries generated after compilation will also be licensed under the same. See [this](libopencm3/COPYING.LGPL3) and [this](libopencm3/COPYING.GPL3) for the LGPL3 and GPL3 licenses.
