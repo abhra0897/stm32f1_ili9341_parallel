@@ -25,7 +25,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/flash.h>
-#include "font_microsoft_16.h"
+#include "font_ubuntu_mono_24.h"
 #include "ili9341_stm32_parallel8.h"
 
 /**
@@ -69,10 +69,14 @@ int main(void)
 	ili_draw_rectangle(5, 160, 50, 50, ILI_COLOR_BLACK);
 
 	// Write a string with transparent background at (0, 0) position with font `font_microsoft_16`
-	ili_draw_string(0, 0, "Hello world", 0, &font_microsoft_16);
+	ili_draw_string(0, 0, "Hello world", 0, &font_ubuntu_mono_24);
+
+	// Write a few characters at different positions
+	for (int i = 0; i < 10; i++)
+		ili_draw_char(rand() % 100 + 5, rand() % 100 + 60, (char)(rand() % 50 + 90), ILI_COLOR_RED, 0, &font_ubuntu_mono_24, 0);
 
 	// Write a string with solid background. Text color white, background color dark green
-	ili_draw_string_withbg(10, 40, "Hello Solid World", ILI_COLOR_WHITE, ILI_COLOR_DARKGREEN, &font_microsoft_16);
+	ili_draw_string_withbg(10, 40, "Hello Solid World", ILI_COLOR_WHITE, ILI_COLOR_DARKGREEN, &font_ubuntu_mono_24);
 
 	// Draw a line between any two points
 	ili_draw_line(4, 18, 200, 150, 1, ILI_COLOR_RED);
