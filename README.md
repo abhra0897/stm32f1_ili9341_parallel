@@ -93,7 +93,7 @@ Connections between STM32F1 and ILI9341 parallel display.
 </table>
 
 ### Benchmarks
-TBD
+Screen fill speed is tested in [crazy_fast](crazy_fast/crazy_fast.c). This is not a proper "benchmark", rather a code to satisfy my lust for high fps.
 
 ### Example
 Example code (**[main.c](example/main.c)**) is in **[example](example)** directory. To compile using the provided [Makefile](example/Makefile), keep the directory structure as it is. If you change the directory structure, edit the SRCS, INCLS, and LIBS in the Makefile accordingly.
