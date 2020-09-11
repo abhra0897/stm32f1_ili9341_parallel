@@ -74,36 +74,6 @@ int main(void)
 #elif DSO138_PLATFORM
 	ili_rotate_display(0);
 #endif
-	/*
-	// Fiiling the entire screen with cyan color
-	ili_fill_screen(ILI_COLOR_CYAN);
-
-	// Fill a rectangle with green yellow
-	ili_fill_rect(20, 0, 80, 80, ILI_COLOR_PINK);
-
-	// Draw a rectangle
-	ili_draw_rectangle(5, 160, 50, 50, ILI_COLOR_BLACK);
-
-	// Write a string with transparent background at (0, 0) position with font `font_microsoft_16`
-	ili_draw_string(0, 0, "Hello world", 0, &font_fixedsys_mono_24);
-
-	// Write a few characters at different positions
-	for (int i = 0; i < 10; i++)
-		ili_draw_char(rand() % 100 + 5, rand() % 100 + 60, (char)(rand() % 50 + 90), ILI_COLOR_RED, 0, &font_fixedsys_mono_24, 0);
-
-	// Write a string with solid background. Text color white, background color dark green
-	ili_draw_string_withbg(10, 40, "Hello Solid World", ILI_COLOR_WHITE, ILI_COLOR_DARKGREEN, &font_fixedsys_mono_24);
-
-	// Draw a line between any two points
-	ili_draw_line(4, 18, 200, 150, 1, ILI_COLOR_RED);
-
-	// Draw a "thicc" line
-	ili_draw_line(180, 2, 20, 250, 5, ILI_COLOR_BLUE);
-
-	// Draw some individual pixels in random points
-	for (uint16_t i = 0; i < 1000; i++)
-		ili_draw_pixel(rand() % 100 + 120, rand() % 100 + 60, ILI_COLOR_WHITE + rand() % 100 + 60);
-	*/
 
 	/*To fill a specific area multiple times superfast, first set the area then fill it.*/
 	// Set an area on the display to be drawn
