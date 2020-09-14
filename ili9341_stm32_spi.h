@@ -25,9 +25,11 @@ SOFTWARE.
 #include "fonts/bitmap_typedefs.h"
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/spi.h>
+#include <libopencm3/stm32/dma.h>
 
-#ifndef INC_ILI9341_STM32_PARALLEL8_H_
-#define INC_ILI9341_STM32_PARALLEL8_H_
+#ifndef INC_ILI9341_STM32_SPI_H_
+#define INC_ILI9341_STM32_SPI_H_
 
 #define ILI_NOP     0x00
 #define ILI_SWRESET 0x01
@@ -104,106 +106,66 @@ SOFTWARE.
 	((uint16_t)(G >> 2) << ILI_G_POS_BGR) | \
 	((uint16_t)(B >> 3) << ILI_B_POS_BGR))
 
-#ifdef USER_DEFAULT_PLATFORM
-    // Color definitions
-    #define ILI_COLOR_BLACK       ILI_RGB(0,     0,   0)
-    #define ILI_COLOR_NAVY        ILI_RGB(0,     0, 123)
-    #define ILI_COLOR_DARKGREEN   ILI_RGB(0,   125,   0)
-    #define ILI_COLOR_DARKCYAN    ILI_RGB(0,   125, 123)
-    #define ILI_COLOR_MAROON      ILI_RGB(123,   0,   0)
-    #define ILI_COLOR_PURPLE      ILI_RGB(123,   0, 123)
-    #define ILI_COLOR_OLIVE       ILI_RGB(123, 125,   0)
-    #define ILI_COLOR_LIGHTGREY   ILI_RGB(198, 195, 198)
-    #define ILI_COLOR_DARKGREY    ILI_RGB(123, 125, 123)
-    #define ILI_COLOR_BLUE        ILI_RGB(0,     0, 255)
-    #define ILI_COLOR_GREEN       ILI_RGB(0,   255,   0)
-    #define ILI_COLOR_CYAN        ILI_RGB(0,   255, 255)
-    #define ILI_COLOR_RED         ILI_RGB(255,   0,   0)
-    #define ILI_COLOR_MAGENTA     ILI_RGB(255,   0, 255)
-    #define ILI_COLOR_YELLOW      ILI_RGB(255, 255,   0)
-    #define ILI_COLOR_WHITE       ILI_RGB(255, 255, 255)
-    #define ILI_COLOR_ORANGE      ILI_RGB(255, 165,   0)
-    #define ILI_COLOR_GREENYELLOW ILI_RGB(173, 255,  41)
-    #define ILI_COLOR_PINK        ILI_RGB(255, 130, 198)
 
-#elif DSO138_PLATFORM
-    
-    #define ILI_COLOR_BLACK       ILI_BGR(0,     0,   0)
-    #define ILI_COLOR_NAVY        ILI_BGR(0,     0, 123)
-    #define ILI_COLOR_DARKGREEN   ILI_BGR(0,   125,   0)
-    #define ILI_COLOR_DARKCYAN    ILI_BGR(0,   125, 123)
-    #define ILI_COLOR_MAROON      ILI_BGR(123,   0,   0)
-    #define ILI_COLOR_PURPLE      ILI_BGR(123,   0, 123)
-    #define ILI_COLOR_OLIVE       ILI_BGR(123, 125,   0)
-    #define ILI_COLOR_LIGHTGREY   ILI_BGR(198, 195, 198)
-    #define ILI_COLOR_DARKGREY    ILI_BGR(123, 125, 123)
-    #define ILI_COLOR_BLUE        ILI_BGR(0,     0, 255)
-    #define ILI_COLOR_GREEN       ILI_BGR(0,   255,   0)
-    #define ILI_COLOR_CYAN        ILI_BGR(0,   255, 255)
-    #define ILI_COLOR_RED         ILI_BGR(255,   0,   0)
-    #define ILI_COLOR_MAGENTA     ILI_BGR(255,   0, 255)
-    #define ILI_COLOR_YELLOW      ILI_BGR(255, 255,   0)
-    #define ILI_COLOR_WHITE       ILI_BGR(255, 255, 255)
-    #define ILI_COLOR_ORANGE      ILI_BGR(255, 165,   0)
-    #define ILI_COLOR_GREENYELLOW ILI_BGR(173, 255,  41)
-    #define ILI_COLOR_PINK        ILI_BGR(255, 130, 198)
-#endif
+// Color definitions
+#define ILI_COLOR_BLACK       ILI_RGB(0,     0,   0)
+#define ILI_COLOR_NAVY        ILI_RGB(0,     0, 123)
+#define ILI_COLOR_DARKGREEN   ILI_RGB(0,   125,   0)
+#define ILI_COLOR_DARKCYAN    ILI_RGB(0,   125, 123)
+#define ILI_COLOR_MAROON      ILI_RGB(123,   0,   0)
+#define ILI_COLOR_PURPLE      ILI_RGB(123,   0, 123)
+#define ILI_COLOR_OLIVE       ILI_RGB(123, 125,   0)
+#define ILI_COLOR_LIGHTGREY   ILI_RGB(198, 195, 198)
+#define ILI_COLOR_DARKGREY    ILI_RGB(123, 125, 123)
+#define ILI_COLOR_BLUE        ILI_RGB(0,     0, 255)
+#define ILI_COLOR_GREEN       ILI_RGB(0,   255,   0)
+#define ILI_COLOR_CYAN        ILI_RGB(0,   255, 255)
+#define ILI_COLOR_RED         ILI_RGB(255,   0,   0)
+#define ILI_COLOR_MAGENTA     ILI_RGB(255,   0, 255)
+#define ILI_COLOR_YELLOW      ILI_RGB(255, 255,   0)
+#define ILI_COLOR_WHITE       ILI_RGB(255, 255, 255)
+#define ILI_COLOR_ORANGE      ILI_RGB(255, 165,   0)
+#define ILI_COLOR_GREENYELLOW ILI_RGB(173, 255,  41)
+#define ILI_COLOR_PINK        ILI_RGB(255, 130, 198)
+
 
 /*************************** Pin confirugation START ************************/
-#ifdef USER_DEFAULT_PLATFORM
-	/*
-	* Pin mapping:
-	* ILI9341				STM32
-	* ---------------------------
-	* 		--Data--
-	* DB10					PA0
-	* DB11					PA1
-	* ..					..
-	* DB17					PA7
-	*
-	*		--Control--
-	* RESETn				PB0
-	* CSn					PB1
-	* D/Cn					PB5#include <libopencm3/stm32/rcc.h>
-	* WRn					PB4
-	* RDn					PB3
-	*/
-	#define ILI_PORT_DATA	GPIOA
-	#define ILI_D0  		GPIO0
-	#define ILI_D1  		GPIO1
-	#define ILI_D2          GPIO2
-	#define ILI_D3  		GPIO3
-	#define ILI_D4			GPIO4
-	#define ILI_D5			GPIO5
-	#define ILI_D6			GPIO6
-	#define ILI_D7			GPIO7
-	#define ILI_PORT_CTRL	GPIOB
-	#define ILI_RST			GPIO0
-	#define ILI_CS			GPIO1
-	#define ILI_DC			GPIO5
-	#define ILI_WR			GPIO4
-	#define ILI_RD			GPIO3
-	#define JTAG_REMAPPING_MODE AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST /* See below */
 
-#elif DSO138_PLATFORM
-	#define ILI_PORT_DATA	GPIOB
-	#define ILI_D0			GPIO0
-	#define ILI_D1			GPIO1
-	#define ILI_D2			GPIO2
-	#define ILI_D3			GPIO3
-	#define ILI_D4			GPIO4
-	#define ILI_D5			GPIO5
-	#define ILI_D6			GPIO6
-	#define ILI_D7			GPIO7
-	#define ILI_PORT_CTRL_B	GPIOB
-	#define ILI_RD			GPIO10
-	#define ILI_RST			GPIO11
-	#define ILI_PORT_CTRL_C	GPIOC
-	#define ILI_CS			GPIO13
-	#define ILI_DC			GPIO14
-	#define ILI_WR			GPIO15
-	#define JTAG_REMAPPING_MODE AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF /* See below */
-#endif
+/*
+* Pin mapping:
+* ILI9341				STM32
+* ---------------------------
+* 		--Data--
+* DB10					PA0
+* DB11					PA1
+* ..					..
+* DB17					PA7
+*
+*		--Control--
+* RESETn				PB0
+* CSn					PB1
+* D/Cn					PB5#include <libopencm3/stm32/rcc.h>
+* WRn					PB4
+* RDn					PB3
+*/
+#define ILI_PORT_DATA	GPIOA
+#define ILI_D0  		GPIO0
+#define ILI_D1  		GPIO1
+#define ILI_D2          GPIO2
+#define ILI_D3  		GPIO3
+#define ILI_D4			GPIO4
+#define ILI_D5			GPIO5
+#define ILI_D6			GPIO6
+#define ILI_D7			GPIO7
+#define ILI_PORT_CTRL	GPIOB
+#define ILI_RST			GPIO0
+#define ILI_CS			GPIO1
+#define ILI_DC			GPIO5
+#define ILI_WR			GPIO4
+#define ILI_RD			GPIO3
+#define JTAG_REMAPPING_MODE AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST /* See below */
+
+
 /*
 Possible values of JTAG_REMAPPING_MODE:
 AFIO_MAPR_SWJ_CFG_FULL_SWJ: Full Serial Wire JTAG capability
@@ -219,102 +181,52 @@ AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
  */
 /*************************** Pin confirugation END ************************/
 
-#ifdef USER_DEFAULT_PLATFORM
-	#define ILI_RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
-	#define ILI_RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
-	#define ILI_WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_WR
-	#define ILI_WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_WR
-	#define ILI_DC_CMD			GPIO_BRR(ILI_PORT_CTRL) = ILI_DC
-	#define ILI_DC_DAT			GPIO_BSRR(ILI_PORT_CTRL) = ILI_DC
-	#define ILI_CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_CS
-	#define ILI_CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_CS
-	#define ILI_RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RST
-	#define ILI_RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL) = ILI_RST
-#elif DSO138_PLATFORM
-	#define ILI_RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_B) = ILI_RD
-	#define ILI_RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL_B) = ILI_RD
-	#define ILI_WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_C) = ILI_WR
-	#define ILI_WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL_C) = ILI_WR
-	#define ILI_DC_CMD			GPIO_BRR(ILI_PORT_CTRL_C) = ILI_DC
-	#define ILI_DC_DAT			GPIO_BSRR(ILI_PORT_CTRL_C) = ILI_DC
-	#define ILI_CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_C) = ILI_CS
-	#define ILI_CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL_C) = ILI_CS
-	#define ILI_RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL_B) = ILI_RST
-	#define ILI_RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL_B) = ILI_RST
-#endif
+#define ILI_RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
+#define ILI_RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
+#define ILI_WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_WR
+#define ILI_WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_WR
+#define ILI_DC_CMD			GPIO_BRR(ILI_PORT_CTRL) = ILI_DC
+#define ILI_DC_DAT			GPIO_BSRR(ILI_PORT_CTRL) = ILI_DC
+#define ILI_CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_CS
+#define ILI_CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_CS
+#define ILI_RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RST
+#define ILI_RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL) = ILI_RST
 
-#define ILI_WR_STROBE		{ILI_WR_ACTIVE; ILI_WR_IDLE;}
-#define ILI_RD_STROBE		{ILI_RD_ACTIVE; ILI_RD_IDLE;}
+#define ILI_WR_STROBE
+#define ILI_RD_STROBE
 
 #define ILI_WRITE_8BIT(d)	{GPIO_BSRR(ILI_PORT_DATA) = (uint32_t)(0x00FF0000 | ((d) & 0xFF)); ILI_WR_STROBE;}
 #define ILI_READ_8BIT(d)	{d = (uint8_t)(GPIO_IDR(ILI_PORT_DATA) & 0x00FF;}
 
-#ifdef USER_DEFAULT_PLATFORM
-	#define ILI_CONFIG_GPIO_CLOCK()	    { \
-										rcc_periph_clock_enable(RCC_GPIOB); \
-										rcc_periph_clock_enable(RCC_GPIOA); \
-										rcc_periph_clock_enable(RCC_AFIO); \
-									}
-	#define ILI_CONFIG_GPIO()			{ \
-										/*Configure ILI_PORT_DATA GPIO pins */ \
-										gpio_set_mode( \
-											ILI_PORT_DATA, \
-											GPIO_MODE_OUTPUT_50_MHZ, \
-											GPIO_CNF_OUTPUT_PUSHPULL, \
-											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
-										/*Configure ILI_PORT_CTRL GPIO pins */ \
-										gpio_set_mode(ILI_PORT_CTRL, \
-											GPIO_MODE_OUTPUT_50_MHZ, \
-											GPIO_CNF_OUTPUT_PUSHPULL, \
-											ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
-										/*Configure GPIO pin Output Level */ \
-										gpio_set( \
-											ILI_PORT_DATA, \
-											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
-										gpio_set( \
-											ILI_PORT_CTRL, \
-											ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
-										/* Remap JTAG pins */ \
-										AFIO_MAPR |= JTAG_REMAPPING_MODE; \
-									}
-#elif DSO138_PLATFORM
-	#define ILI_CONFIG_GPIO_CLOCK()	    { \
-										rcc_periph_clock_enable(RCC_GPIOB); \
-										rcc_periph_clock_enable(RCC_GPIOA); \
-										rcc_periph_clock_enable(RCC_GPIOC); \
-										rcc_periph_clock_enable(RCC_AFIO); \
-									}
-	#define ILI_CONFIG_GPIO()			{ \
-										/*Configure ILI_PORT_DATA GPIO pins */ \
-										gpio_set_mode( \
-											ILI_PORT_DATA, \
-											GPIO_MODE_OUTPUT_50_MHZ, \
-											GPIO_CNF_OUTPUT_PUSHPULL, \
-											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
-										/*Configure ILI_PORT_CTRL_B GPIO pins */ \
-										gpio_set_mode(ILI_PORT_CTRL_B, \
-											GPIO_MODE_OUTPUT_50_MHZ, \
-											GPIO_CNF_OUTPUT_PUSHPULL, \
-											ILI_RD | ILI_RST); \
-										/*Configure ILI_PORT_CTRL_C GPIO pins */ \
-										gpio_set_mode(ILI_PORT_CTRL_C, \
-											GPIO_MODE_OUTPUT_50_MHZ, \
-											GPIO_CNF_OUTPUT_PUSHPULL, \
-											ILI_CS | ILI_DC | ILI_WR); \
-										/*Configure GPIO pin Output Level */ \
-										gpio_set( \
-											ILI_PORT_DATA, \
-											ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
-										gpio_set( \
-											ILI_PORT_CTRL_B, \
-											ILI_RD | ILI_RST); \
-										gpio_set( \
-											ILI_PORT_CTRL_C, \
-											ILI_CS | ILI_DC | ILI_WR); \
-										/* Remap JTAG pins */ \
-										AFIO_MAPR |= JTAG_REMAPPING_MODE; \
-									}
-#endif
+
+#define ILI_CONFIG_GPIO_CLOCK()	    { \
+									rcc_periph_clock_enable(RCC_GPIOB); \
+									rcc_periph_clock_enable(RCC_GPIOA); \
+									rcc_periph_clock_enable(RCC_AFIO); \
+								}
+#define ILI_CONFIG_GPIO()			{ \
+									/*Configure ILI_PORT_DATA GPIO pins */ \
+									gpio_set_mode( \
+										ILI_PORT_DATA, \
+										GPIO_MODE_OUTPUT_50_MHZ, \
+										GPIO_CNF_OUTPUT_PUSHPULL, \
+										ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
+									/*Configure ILI_PORT_CTRL GPIO pins */ \
+									gpio_set_mode(ILI_PORT_CTRL, \
+										GPIO_MODE_OUTPUT_50_MHZ, \
+										GPIO_CNF_OUTPUT_PUSHPULL, \
+										ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
+									/*Configure GPIO pin Output Level */ \
+									gpio_set( \
+										ILI_PORT_DATA, \
+										ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
+									gpio_set( \
+										ILI_PORT_CTRL, \
+										ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
+									/* Remap JTAG pins */ \
+									AFIO_MAPR |= JTAG_REMAPPING_MODE; \
+								}
+
 
 #define ILI_SWAP(a, b)		{uint16_t temp; temp = a; a = b; b = temp;}
 
