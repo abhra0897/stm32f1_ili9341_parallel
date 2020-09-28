@@ -24,6 +24,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <ili9341_stm32_parallel8.h>
 
+#define ILI_BUFFER_SIZE_BYTES	256
 //TFT width and height default global variables
 uint16_t ili_tftwidth = 320;
 uint16_t ili_tftheight = 240;
@@ -42,6 +43,9 @@ void ili_set_address_window(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	_ili_write_command_8bit(ILI_CASET);
 
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_CS_ACTIVE;
+	#endif
 	ILI_DC_DAT;
 	ILI_WRITE_8BIT((uint8_t)(x1 >> 8));
 	ILI_WRITE_8BIT((uint8_t)x1);
@@ -50,6 +54,9 @@ void ili_set_address_window(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 
 
 	_ili_write_command_8bit(ILI_PASET);
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_CS_ACTIVE;
+	#endif
 	ILI_DC_DAT;
 	ILI_WRITE_8BIT((uint8_t)(y1 >> 8));
 	ILI_WRITE_8BIT((uint8_t)y1);
@@ -277,40 +284,43 @@ void ili_draw_string_withbg(uint16_t x, uint16_t y, char *str, uint16_t fore_col
  * @param y Start row address
  * @param bitmap Pointer to the image data to be drawn
  */
-// void ili_draw_bitmap_old(uint16_t x, uint16_t y, const tImage16bit *bitmap)
-// {
-// 	uint16_t width = 0, height = 0;
-// 	width = bitmap->width;
-// 	height = bitmap->height;
-
-// 	uint16_t total_pixels = width * height;
-
-// 	ili_set_address_window(x, y, x + width-1, y + height-1);
-
-// 	ILI_DC_DAT;
-// 	for (uint16_t pixels = 0; pixels < total_pixels; pixels++)
-// 	{
-// 		ILI_WRITE_8BIT((uint8_t)(bitmap->data[pixels] >> 8));
-// 		ILI_WRITE_8BIT((uint8_t)bitmap->data[pixels]);
-// 	}
-// }
-
 void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage *bitmap)
 {
 	uint16_t width = 0, height = 0;
 	width = bitmap->width;
 	height = bitmap->height;
-
-	uint16_t total_pixels = width * height;
-
 	ili_set_address_window(x, y, x + width-1, y + height-1);
 
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_CS_ACTIVE;
+	#endif
 	ILI_DC_DAT;
-	for (uint16_t pixels = 0; pixels < total_pixels; pixels++)
-	{
-		ILI_WRITE_8BIT((uint8_t)(bitmap->data[2*pixels]));
-		ILI_WRITE_8BIT((uint8_t)(bitmap->data[2*pixels + 1]));
-	}
+
+	#ifdef ILI_USE_SPI_DMA
+		uint32_t bytes_to_write = width * height * 2;
+		uint16_t transfer_size = ILI_BUFFER_SIZE_BYTES;
+		uint32_t src_start_address = 0;
+
+		while (bytes_to_write)
+		{
+			transfer_size = (bytes_to_write < transfer_size) ? bytes_to_write : transfer_size;
+			_ili_write_spi_dma((void *)(&bitmap->data[src_start_address]), transfer_size);
+			src_start_address += ili_BUFFER_SIZE_BYTES;
+			bytes_to_write -= transfer_size;
+		}
+
+	#else
+		uint16_t total_pixels = width * height;
+		for (uint16_t pixels = 0; pixels < total_pixels; pixels++)
+		{
+			ILI_WRITE_8BIT((uint8_t)(bitmap->data[2*pixels]));
+			ILI_WRITE_8BIT((uint8_t)(bitmap->data[2*pixels + 1]));
+		}
+	#endif
+
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_CS_IDLE;
+	#endif
 }
 
 
@@ -322,6 +332,7 @@ void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage *bitmap)
  */
 void ili_fill_color(uint16_t color, uint32_t len)
 {
+	ILI_DC_DAT;
 	/*
 	* Here, macros are directly called (instead of inline functions) for performance increase
 	*/
@@ -330,52 +341,77 @@ void ili_fill_color(uint16_t color, uint32_t len)
 	uint8_t color_high = color >> 8;
 	uint8_t color_low = color;
 
-	ILI_DC_DAT;
-	// Write first pixel
-	ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low);
-	len--;
 
-	// If higher byte and lower byte are identical,
-	// just strobe the WR pin to send the previous data
-	if(color_high == color_low)
-	{
-		while(blocks--)
+	#ifdef ST_USE_SPI_DMA		
+		uint8_t disp_buffer[ST_BUFFER_SIZE_BYTES];
+		for (uint16_t i = 0; i < ST_BUFFER_SIZE_BYTES; i = i+2)
 		{
-			// pass count = number of blocks / pixels per pass = 64 / 4
-			pass_count = 16;
-			while(pass_count--)
+			disp_buffer[i] = color_high;
+			disp_buffer[i + 1] = color_low;
+		}
+
+		// len is pixel count. But each pixel is 2 bytes. So, multiply by 2
+		uint32_t bytes_to_write = len * 2;
+		uint16_t transfer_size = ST_BUFFER_SIZE_BYTES;
+		while (bytes_to_write)
+		{
+			transfer_size = (bytes_to_write < transfer_size) ? bytes_to_write : transfer_size;
+			_st_write_spi_dma(disp_buffer, transfer_size);
+			bytes_to_write -= transfer_size;
+		}
+
+	#else
+
+		// Write first pixel
+		ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low);
+		len--;
+
+		#ifdef INC_ILI9341_STM32_PARALLEL8_H_
+		// [IMPORTANT]: The colorhigh == colorlow check is only applicable for parallel interface
+		// If higher byte and lower byte are identical,
+		// just strobe the WR pin to send the previous data
+		if(color_high == color_low)
+		{
+			while(blocks--)
 			{
-				ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; // 2
-				ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; // 4
+				// pass count = number of blocks / pixels per pass = 64 / 4
+				pass_count = 16;
+				while(pass_count--)
+				{
+					ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; // 2
+					ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; ILI_WR_STROBE; // 4
+				}
+			}
+			// Fill any remaining pixels (1 to 64)
+			pass_count = len & 63;
+			while (pass_count--)
+			{
+				ILI_WR_STROBE; ILI_WR_STROBE;
 			}
 		}
-		// Fill any remaining pixels (1 to 64)
-		pass_count = len & 63;
-		while (pass_count--)
-		{
-			ILI_WR_STROBE; ILI_WR_STROBE;
-		}
-	}
 
-	// If higher and lower bytes are different, send those bytes
-	else
-	{
-		while(blocks--)
+		// If higher and lower bytes are different, send those bytes
+		else
+		#endif
 		{
-			pass_count = 16;
-			while(pass_count--)
+			while(blocks--)
 			{
-				ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); 	ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); //2
-				ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); 	ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); //4
+				pass_count = 16;
+				while(pass_count--)
+				{
+					ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); 	ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); //2
+					ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); 	ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low); //4
+				}
+			}
+			pass_count = len & 63;
+			while (pass_count--)
+			{
+				// write here the remaining data
+				ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low);
 			}
 		}
-		pass_count = len & 63;
-		while (pass_count--)
-		{
-			// write here the remaining data
-			ILI_WRITE_8BIT(color_high); ILI_WRITE_8BIT(color_low);
-		}
-	}
+
+	#endif
 }
 
 
@@ -471,12 +507,19 @@ void _ili_plot_line_low(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint
 		ili_set_address_window(x, y, x+width-1, y+width-1);
 		//Drawing all the pixels of a single point
 
+		#ifdef ILI_RELEASE_WHEN_IDLE
+			ILI_CS_ACTIVE;
+		#endif
 		ILI_DC_DAT;
 		for (uint8_t pixel_cnt = 0; pixel_cnt < pixels_per_point; pixel_cnt++)
 		{
 			ILI_WRITE_8BIT(color_high);
 			ILI_WRITE_8BIT(color_low);
 		}
+		#ifdef ILI_RELEASE_WHEN_IDLE
+			ILI_CS_IDLE;
+		#endif
+
 		if (D > 0)
 		{
 			y = y + yi;
@@ -516,12 +559,19 @@ void _ili_plot_line_high(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uin
 		ili_set_address_window(x, y, x+width-1, y+width-1);
 		//Drawing all the pixels of a single point
 
+		#ifdef ILI_RELEASE_WHEN_IDLE
+			ILI_CS_ACTIVE;
+		#endif
 		ILI_DC_DAT;
 		for (uint8_t pixel_cnt = 0; pixel_cnt < pixels_per_point; pixel_cnt++)
 		{
 			ILI_WRITE_8BIT(color_high);
 			ILI_WRITE_8BIT(color_low);
 		}
+		#ifdef ILI_RELEASE_WHEN_IDLE
+			ILI_CS_IDLE;
+		#endif
+
 		if (D > 0)
 		{
 			x = x + xi;
@@ -621,9 +671,15 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 	*/
 
 	ili_set_address_window(x, y, x, y);
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_CS_ACTIVE;
+	#endif
 	ILI_DC_DAT;
 	ILI_WRITE_8BIT((uint8_t)(color >> 8));
 	ILI_WRITE_8BIT((uint8_t)color);
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_CS_IDLE;
+	#endif
 }
 
 
@@ -689,11 +745,26 @@ void ili_init()
 	// Configure gpio output dir and mode
 	ILI_CONFIG_GPIO();
 
-	ILI_CS_ACTIVE;
+	// If using SPI interface, configure SPI related things
+	#ifdef INC_ILI9341_STM32_SPI_H_
+		// If using DMA, config SPI DMA
+		#ifdef ILI_USE_SPI_DMA
+			ILI_CONFIG_SPI_DMA();
+		#endif
+		// Configure SPI settings
+		ILI_CONFIG_SPI();
+	#endif
 
-	ILI_RST_IDLE;
-	ILI_RST_ACTIVE;
-	ILI_RST_IDLE;
+	#ifdef ILI_HAS_CS
+		ILI_CS_ACTIVE;
+	#endif;
+
+	// Hardwae reset is not mandatory if software rest is done
+	#ifdef ILI_HAS_RST
+		ILI_RST_IDLE;
+		ILI_RST_ACTIVE;
+		ILI_RST_IDLE;
+	#endif
 
 	// Approx 10ms delay at 128MHz clock
 	for (uint32_t i = 0; i < 2000000; i++)
