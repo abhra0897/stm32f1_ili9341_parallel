@@ -1,8 +1,8 @@
 
 
 
-## ILI9341 Parallel Display Driver for STM32F1
-This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II/I) bus. It's mainly written for my personal usage.
+## ILI9341 Parallel & SPI Display Driver for STM32F1
+This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II/I) and serial (SPI) bus. It's mainly written for my personal usage.
 
 [Vitasam](https://github.com/vitasam) added support for JYETech [DSO138](jyetech.com/dso-138-oscilloscope-diy-kit/) oscilloscope.
 
@@ -19,7 +19,7 @@ Download this repository using [git](https://git-scm.com/):
 git clone https://github.com/abhra0897/stm32f1_ili9341_parallel.git
 ```
 
-### Wiring
+### Wiring (Parallel 8-bit)
 Connections between STM32F1 and ILI9341 parallel display.
 <table border=1>
     <tr>
@@ -92,8 +92,63 @@ Connections between STM32F1 and ILI9341 parallel display.
     </tr>
 </table>
 
-### Benchmarks
-Screen fill speed is tested in [crazy_fast](crazy_fast/crazy_fast.c). This is not a proper "benchmark", rather a code to satisfy my lust for high fps.
+
+### Wiring (SPI)
+Connections between STM32F1 and ILI9341 serial display.
+<table border=1>
+    <tr>
+        <th colspan=1>ST7789</th>
+        <th rowspan=1>STM32F1</th>
+    </tr>
+    <tr>
+        <td>SDA (SO)</td>
+        <td>PA7</td>
+    </tr>
+    <tr>
+        <td>SCL (CLK)</td>
+        <td>PA5</td>
+    </tr>
+    <tr>
+        <td>RES (RESETn)</td>
+        <td>PA4</td>
+    </tr>
+    <tr>
+        <td>DC (DATA/CMDn)</td>
+        <td>PA2</td>
+    </tr>
+    <tr>
+        <td>BLK (BACKLIGHT)</td>
+        <td>PA3</td>
+    </tr>
+    <tr>
+        <td>CS</td>
+        <td>PA6</td>
+    </tr>
+</table>
+
+
+### Configuration
+All configuration options are in the header files. 
+- For parallel, include [ili9341_stm32_parallel8.h](ili9341_stm32_parallel8.h) and for SPI include [ili9341_stm32_spi.h](ili9341_stm32_spi.h). But don't include both of them at the same time.
+- If display has no RESET pin, comment out `#define ILI_HAS_RST`.
+- To use CS pin, uncomment `#define ILI_HAS_CS`
+- If using CS and there's no other device connected in the same bus, uncomment `#define ILI_RELEASE_WHEN_IDLE` to get a bit extra speed.
+- Here `SPI1` is used, but can be changed from the header.
+- Compiling with `-O1` flag gives almost twice as speed. But may reduce stability slightly. `-O0` flag is the most stable one and other optimization levels don't work.
+
+#### RCC Peripheral Clock Settings
+- If you change GPIOs, change inside `#define ILI_CONFIG_GPIO_CLOCK()` too.
+- Same is applicable for changing SPI bus.
+
+#### DMA Settings (only for SPI)
+- Comment out `#define ILI_USE_SPI_DMA` to disable DMA based SPI write
+- If you change SPI bus, also change DMA number (`#define ILI_DMA`) and DMA channel number (`#define ILI_DMA_CHANNEL`)
+
+
+### Benchmarks 
+- **Parallel 8-bit)**: Screen fill speed is tested in [crazy_fast](crazy_fast/crazy_fast.c). This is not a proper "benchmark", rather a code to satisfy my lust for high fps.
+- **SPI**: TBD 
+
 
 ### Example
 Example code (**[main.c](example/main.c)**) is in **[example](example)** directory. To compile using the provided [Makefile](example/Makefile), keep the directory structure as it is. If you change the directory structure, edit the SRCS, INCLS, and LIBS in the Makefile accordingly.
@@ -190,7 +245,7 @@ void ili_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t
  * @param font Pointer to the font of the character
  * @param is_bg Defines if character has background or not (transparent)
  */
-void ili_draw_char(uint16_t x, uint16_t y, char character, uint16_t fore_color, uint16_t back_color, const tFont *font, uint8_t is_bg)
+void ili_draw_char(uint16_t x, uint16_t y, char character, uint16_t fore_color, uint16_t back_color, const tFont *font, uint8_t is_bg);
 
 /**
  * Draws a string on the display with `font` and `color` at given position.
@@ -237,6 +292,7 @@ void ili_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
  - [x] Write better comments
  - [x] Explain how to create fonts
  - [x] Optimize driver for speed and size. Speed is the first priority (improved speed)
+ - [x] Added SPI support along with SPI DMA!
 
 ### License
 **[libopencm3](libopencm3)** and any derivative of the same are licensed under the terms of the GNU Lesser General Public License (LGPL), version 3 or later. The binaries generated after compilation will also be licensed under the same. See [this](libopencm3/COPYING.LGPL3) and [this](libopencm3/COPYING.GPL3) for the LGPL3 and GPL3 licenses.
