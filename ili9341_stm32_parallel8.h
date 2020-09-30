@@ -164,10 +164,17 @@ SOFTWARE.
 	*		--Control--
 	* RESETn				PB0
 	* CSn					PB1
-	* D/Cn					PB5#include <libopencm3/stm32/rcc.h>
+	* D/Cn					PB5
 	* WRn					PB4
 	* RDn					PB3
 	*/
+
+	#define ILI_HAS_RST
+	#define ILI_HAS_CS
+	#ifdef ILI_HAS_CS
+	//	#define ILI_RELEASE_WHEN_IDLE
+	#endif
+
 	#define ILI_PORT_DATA	GPIOA
 	#define ILI_D0  		GPIO0
 	#define ILI_D1  		GPIO1
