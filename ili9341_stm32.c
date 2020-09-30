@@ -23,6 +23,8 @@ SOFTWARE.
 */
 #include <stdlib.h>
 #include <ili9341_stm32_parallel8.h>
+//#include <ili9341_stm32_spi.h>
+
 
 #define ILI_BUFFER_SIZE_BYTES	256
 //TFT width and height default global variables
@@ -305,7 +307,7 @@ void ili_draw_bitmap(uint16_t x, uint16_t y, const tImage *bitmap)
 		{
 			transfer_size = (bytes_to_write < transfer_size) ? bytes_to_write : transfer_size;
 			_ili_write_spi_dma((void *)(&bitmap->data[src_start_address]), transfer_size);
-			src_start_address += ili_BUFFER_SIZE_BYTES;
+			src_start_address += ILI_BUFFER_SIZE_BYTES;
 			bytes_to_write -= transfer_size;
 		}
 
@@ -757,7 +759,7 @@ void ili_init()
 
 	#ifdef ILI_HAS_CS
 		ILI_CS_ACTIVE;
-	#endif;
+	#endif
 
 	// Hardwae reset is not mandatory if software rest is done
 	#ifdef ILI_HAS_RST
