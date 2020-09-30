@@ -23,7 +23,7 @@ MCFLAGS = -mcpu=$(MCU)
 
 ################## User Sources ####################
 SRCS = main.c
-SRCS += ../ili9341_stm32_parallel8.c
+SRCS += ../ili9341_stm32.c
 SRCS += ../libopencm3/lib/cm3/vector.c
 
 ################## Includes ########################
