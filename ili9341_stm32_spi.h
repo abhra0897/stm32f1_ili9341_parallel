@@ -31,6 +31,10 @@ SOFTWARE.
 #ifndef INC_ILI9341_STM32_SPI_H_
 #define INC_ILI9341_STM32_SPI_H_
 
+#ifdef DSO138_PLATFORM
+	#warning SPI interface doesn't support DSO138 platform. Include parallel interface header instead.
+#endif
+
 #define ILI_NOP     0x00
 #define ILI_SWRESET 0x01
 #define ILI_RDDID   0xD3
@@ -131,38 +135,40 @@ SOFTWARE.
 
 /*************************** Pin confirugation START ************************/
 
-/*
-* Pin mapping:
-* ILI9341				STM32
-* ---------------------------
-* 		--Data--
-* DB10					PA0
-* DB11					PA1
-* ..					..
-* DB17					PA7
-*
-*		--Control--
-* RESETn				PB0
-* CSn					PB1
-* D/Cn					PB5#include <libopencm3/stm32/rcc.h>
-* WRn					PB4
-* RDn					PB3
-*/
-#define ILI_PORT_DATA	GPIOA
-#define ILI_D0  		GPIO0
-#define ILI_D1  		GPIO1
-#define ILI_D2          GPIO2
-#define ILI_D3  		GPIO3
-#define ILI_D4			GPIO4
-#define ILI_D5			GPIO5
-#define ILI_D6			GPIO6
-#define ILI_D7			GPIO7
-#define ILI_PORT_CTRL	GPIOB
-#define ILI_RST			GPIO0
-#define ILI_CS			GPIO1
-#define ILI_DC			GPIO5
-#define ILI_WR			GPIO4
-#define ILI_RD			GPIO3
+/**
+ * Pin mapping:
+ * ILI9341				STM32
+ * ---------------------------
+ * SDA					PA7
+ * SCL					PA5				..			
+ * RESETn				PA4
+ * D/Cn					PA2
+ * BLK					PA3
+ * CSn					--
+ */
+#define ILI_USE_SPI_DMA
+#define ILI_HAS_RST
+//#define ILI_HAS_CS
+#ifdef ILI_HAS_CS
+//	#define ILI_RELEASE_WHEN_IDLE
+#endif
+
+#define ILI_SPI			SPI1
+#ifdef ILI_USE_SPI_DMA
+	#define ILI_DMA			DMA1
+	#define ILI_DMA_CHANNEL	3
+#endif
+
+#define ILI_PORT			GPIOA
+
+#define ILI_RST			GPIO4
+#define ILI_DC			GPIO2
+#define ILI_SDA			GPIO7
+#define ILI_SCL			GPIO5
+#define ILI_BLK			GPIO3
+// To use Chip Select (CS), uncomment `ILI_HAS_CS` above
+#define ILI_CS			GPIO6
+
 #define JTAG_REMAPPING_MODE AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST /* See below */
 
 
@@ -181,92 +187,178 @@ AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_OFF: JTAG-DP disabled and SW-DP disabled
  */
 /*************************** Pin confirugation END ************************/
 
-#define ILI_RD_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RD
-#define ILI_RD_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_RD
-#define ILI_WR_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_WR
-#define ILI_WR_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_WR
-#define ILI_DC_CMD			GPIO_BRR(ILI_PORT_CTRL) = ILI_DC
-#define ILI_DC_DAT			GPIO_BSRR(ILI_PORT_CTRL) = ILI_DC
-#define ILI_CS_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_CS
-#define ILI_CS_IDLE			GPIO_BSRR(ILI_PORT_CTRL) = ILI_CS
-#define ILI_RST_ACTIVE		GPIO_BRR(ILI_PORT_CTRL) = ILI_RST
-#define ILI_RST_IDLE		GPIO_BSRR(ILI_PORT_CTRL) = ILI_RST
+#define ILI_DC_CMD			GPIO_BRR(ILI_PORT) = ILI_DC
+#define ILI_DC_DAT			GPIO_BSRR(ILI_PORT) = ILI_DC
+#define ILI_RST_ACTIVE		GPIO_BRR(ILI_PORT) = ILI_RST
+#define ILI_RST_IDLE		GPIO_BSRR(ILI_PORT) = ILI_RST
+#ifdef ILI_HAS_CS
+	#define ILI_CS_ACTIVE		GPIO_BRR(ILI_PORT) = ILI_CS
+	#define ILI_CS_IDLE			GPIO_BSRR(ILI_PORT) = ILI_CS
+#endif
 
-#define ILI_WR_STROBE
-#define ILI_RD_STROBE
-
-#define ILI_WRITE_8BIT(d)	{GPIO_BSRR(ILI_PORT_DATA) = (uint32_t)(0x00FF0000 | ((d) & 0xFF)); ILI_WR_STROBE;}
-#define ILI_READ_8BIT(d)	{d = (uint8_t)(GPIO_IDR(ILI_PORT_DATA) & 0x00FF;}
-
-
-#define ILI_CONFIG_GPIO_CLOCK()	    { \
-									rcc_periph_clock_enable(RCC_GPIOB); \
+#define ILI_CONFIG_GPIO_CLOCK()	{ \
 									rcc_periph_clock_enable(RCC_GPIOA); \
 									rcc_periph_clock_enable(RCC_AFIO); \
+									rcc_periph_clock_enable(RCC_SPI1); \
+									rcc_periph_clock_enable(RCC_DMA1); \
 								}
-#define ILI_CONFIG_GPIO()			{ \
-									/*Configure ILI_PORT_DATA GPIO pins */ \
-									gpio_set_mode( \
-										ILI_PORT_DATA, \
-										GPIO_MODE_OUTPUT_50_MHZ, \
-										GPIO_CNF_OUTPUT_PUSHPULL, \
-										ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
-									/*Configure ILI_PORT_CTRL GPIO pins */ \
-									gpio_set_mode(ILI_PORT_CTRL, \
-										GPIO_MODE_OUTPUT_50_MHZ, \
-										GPIO_CNF_OUTPUT_PUSHPULL, \
-										ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
-									/*Configure GPIO pin Output Level */ \
-									gpio_set( \
-										ILI_PORT_DATA, \
-										ILI_D0 | ILI_D1 | ILI_D2 | ILI_D3 | ILI_D4 | ILI_D5 | ILI_D6 | ILI_D7); \
-									gpio_set( \
-										ILI_PORT_CTRL, \
-										ILI_RST | ILI_CS | ILI_DC | ILI_WR | ILI_RD); \
-									/* Remap JTAG pins */ \
-									AFIO_MAPR |= JTAG_REMAPPING_MODE; \
+#ifdef ILI_HAS_CS
+	#define ILI_CONFIG_GPIO()		{ \
+										/*Configure GPIO pins : PA2 PA3 PA4 PA5 PA7 */ \
+										gpio_set_mode(ILI_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, ILI_SCL|ILI_SDA); \
+										gpio_set_mode(ILI_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, ILI_DC|ILI_BLK|ILI_RST|ILI_CS); \
+										/*Configure GPIO pin Output Level */ \
+										gpio_set(ILI_PORT, ILI_BLK|ILI_RST|ILI_DC|ILI_CS); \
+										/* Configures PB4 as GPIO */ \
+										AFIO_MAPR |= JTAG_REMAPPING_MODE; \
+									}
+#else
+	#define ILI_CONFIG_GPIO()		{ \
+										/*Configure GPIO pins : PA2 PA3 PA4 PA5 PA7 */ \
+										gpio_set_mode(ILI_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, ILI_SCL|ILI_SDA); \
+										gpio_set_mode(ILI_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, ILI_DC|ILI_BLK|ILI_RST); \
+										/*Configure GPIO pin Output Level */ \
+										gpio_set(ILI_PORT, ILI_BLK|ILI_RST|ILI_DC); \
+										/* Configures PB4 as GPIO */ \
+										AFIO_MAPR |= JTAG_REMAPPING_MODE; \
+									}
+#endif
+
+#define ILI_CONFIG_SPI()			{ \
+									/* Reset SPI, SPI_CR1 register cleared, SPI is disabled */ \
+									spi_reset(ILI_SPI); \
+									SPI_I2SCFGR(ILI_SPI) = 0; \
+									/* Must use SPI_MODE = 2. (CPOL 1, CPHA 0) */\
+									/* Read about SPI MODEs: https://en.wikipedia.org/wiki/Serial_Peripheral_Interface*/ \
+									spi_init_master(ILI_SPI, SPI_CR1_BAUDRATE_FPCLK_DIV_2, SPI_CR1_CPOL_CLK_TO_1_WHEN_IDLE, SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_DFF_8BIT, SPI_CR1_MSBFIRST); \
+									spi_enable_software_slave_management(ILI_SPI); \
+									spi_set_full_duplex_mode(ILI_SPI); \
+									spi_set_nss_high(ILI_SPI); \
+									/* Enable SPI1 periph. */ \
+									spi_enable(ILI_SPI); \
 								}
 
 
 #define ILI_SWAP(a, b)		{uint16_t temp; temp = a; a = b; b = temp;}
 
-/*
-* function prototypes
-*/
 
-/*
- * Inline function to send 8 bit command to the display
- * User need not call it
- */
+// Either use TXE and BSY flag check to ensure transaction completes, 
+// or use nops to get higher fps. Add more nops if display is not working properly
+// Remove nops if fps is too low. 
+// Rule of thumb: If optimization flag value is set to higher, and/or MCU is overclocked, then increase nops
+
+// Note: If display shows wrong output, either change number of nops as said above,
+//		 or uncomment TXE and BSY flag checks and comment out all nops.
+#define ILI_WRITE_8BIT(d)	do{ \
+							SPI_DR(ILI_SPI) = (uint8_t)(d); \
+							/*while (!(SPI_SR(ST_SPI) & SPI_SR_TXE));*/ \
+							/*while (SPI_SR(ST_SPI) & SPI_SR_BSY);*/ \
+							__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+							__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+							__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+							__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+							__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+						} while(0)
+
+#ifdef ILI_USE_SPI_DMA
+
+	#define ILI_CONFIG_SPI_DMA()		{ \
+									/* DMA Peripheral address set to SPI*/ \
+									DMA_CPAR(ILI_DMA, ILI_DMA_CHANNEL) = (uint32_t)&SPI_DR(ILI_SPI); \
+									/* Dma memory address is reset */ \
+									DMA_CMAR(ILI_DMA, ILI_DMA_CHANNEL) = 0; \
+									/* Number of data transfer is reset */ \
+									DMA_CNDTR(ILI_DMA, ILI_DMA_CHANNEL) = 0; \
+									/* DMA priority is high */ \
+									DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) = DMA_CCR_PL_HIGH; \
+									/* Data transfer direction: Read from memory */ \
+									DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) |= DMA_CCR_DIR; \
+									/* Disable circular DMA */ \
+									DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) &= ~DMA_CCR_CIRC; \
+									/* peripheral increment disabled */\
+									DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) &= ~DMA_CCR_PINC; \
+									/* memory increment enabled */ \
+									DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) |= DMA_CCR_MINC; \
+									/* peripheral and memory data size set to 8 bit */ \
+									DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) |= DMA_CCR_PSIZE_8BIT | DMA_CCR_MSIZE_8BIT; \
+								}
+
+	__attribute__((always_inline)) static inline void _ili_write_spi_dma(void *data_addr, uint16_t length)
+	{
+		// Set memory source address
+		DMA_CMAR(ILI_DMA, ILI_DMA_CHANNEL) = (uint32_t)data_addr;
+		// set data count
+		DMA_CNDTR(ILI_DMA, ILI_DMA_CHANNEL) = length;
+
+		// Enable DMA channel 
+		DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) |= DMA_CCR_EN;
+		// Enable SPI DMA. This will start the DMA transaction
+		SPI_CR2(ILI_SPI) |= SPI_CR2_TXDMAEN;
+
+		// wait until all data is sent (count becomes 0)
+		while (DMA_CNDTR(ILI_DMA, ILI_DMA_CHANNEL));
+		// Wait until tx buffer is empty (not set)
+		while (!(SPI_SR(ILI_SPI) & SPI_SR_TXE));
+		// Wait until bus is not busy
+		while (SPI_SR(ILI_SPI) & SPI_SR_BSY);
+
+		// Disable SPI DMA tx
+		SPI_CR2(ILI_SPI) &= ~SPI_CR2_TXDMAEN;
+		// Disable DMA channel
+		DMA_CCR(ILI_DMA, ILI_DMA_CHANNEL) &= ~DMA_CCR_EN;
+	}
+
+#endif
+
+
 __attribute__((always_inline)) static inline void _ili_write_command_8bit(uint8_t cmd)
 {
-	//CS_ACTIVE;
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_ACTIVE;
+	#endif
 	ILI_DC_CMD;
 	ILI_WRITE_8BIT(cmd);
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_IDLE;
+	#endif
 }
 
 /*
- * Inline function to send 8 bit data to the display
+ * inline function to send 8 bit data to the display
  * User need not call it
  */
-__attribute__((always_inline)) static inline  void _ili_write_data_8bit(uint8_t dat)
+__attribute__((always_inline)) static inline void _ili_write_data_8bit(uint8_t dat)
 {
-	//CS_ACTIVE;
-	ILI_DC_DAT;
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_ACTIVE;
+	#endif
+	ILI_DC_CMD;
 	ILI_WRITE_8BIT(dat);
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_IDLE;
+	#endif
 }
 
 /*
- * Inline function to send 16 bit data to the display
+ * inline function to send 16 bit data to the display
  * User need not call it
  */
 __attribute__((always_inline)) static inline void _ili_write_data_16bit(uint16_t dat)
 {
-	//CS_ACTIVE;
-	ILI_DC_DAT;
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_ACTIVE;
+	#endif
+	ILI_DC_CMD;
 	ILI_WRITE_8BIT((uint8_t)(dat >> 8));
 	ILI_WRITE_8BIT((uint8_t)dat);
+	#ifdef ILI_RELEASE_WHEN_IDLE
+		ILI_IDLE;
+	#endif
 }
+
+/*
+* function prototypes
+*/
 
 /**
  * Set an area for drawing on the display with start row,col and end row,col.
