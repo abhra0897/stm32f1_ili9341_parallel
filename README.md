@@ -97,7 +97,7 @@ Connections between STM32F1 and ILI9341 parallel display.
 Connections between STM32F1 and ILI9341 serial display.
 <table border=1>
     <tr>
-        <th colspan=1>ST7789</th>
+        <th colspan=1>ILI9341</th>
         <th rowspan=1>STM32F1</th>
     </tr>
     <tr>
@@ -132,7 +132,7 @@ All configuration options are in the header files.
 - For parallel, include [ili9341_stm32_parallel8.h](ili9341_stm32_parallel8.h) and for SPI include [ili9341_stm32_spi.h](ili9341_stm32_spi.h). But don't include both of them at the same time.
 - If display has no RESET pin, comment out `#define ILI_HAS_RST`.
 - To use CS pin, uncomment `#define ILI_HAS_CS`
-- If using CS and there's no other device connected in the same bus, uncomment `#define ILI_RELEASE_WHEN_IDLE` to get a bit extra speed.
+- If using CS and there's no other device connected in the same bus, comment `#define ILI_RELEASE_WHEN_IDLE` to get a bit extra speed.
 - Here `SPI1` is used, but can be changed from the header.
 - Compiling with `-O1` flag gives almost twice as speed. But may reduce stability slightly. `-O0` flag is the most stable one and other optimization levels don't work.
 
