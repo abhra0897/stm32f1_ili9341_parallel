@@ -2,6 +2,9 @@
 
 
 ## ILI9341 Parallel Display Driver for STM32F1
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7bd0c9294220445ea020c42f9d1c0108)](https://app.codacy.com/gh/abhra0897/stm32f1_ili9341_parallel?utm_source=github.com&utm_medium=referral&utm_content=abhra0897/stm32f1_ili9341_parallel&utm_campaign=Badge_Grade)
+
 This is a fast display driver for interfacing ILI9341 LCD display with STM32F1 microcontroller over an 8bit parallel (8080-II/I) bus. It's mainly written for my personal usage.
 
 [Vitasam](https://github.com/vitasam) added support for JYETech [DSO138](jyetech.com/dso-138-oscilloscope-diy-kit/) oscilloscope.
