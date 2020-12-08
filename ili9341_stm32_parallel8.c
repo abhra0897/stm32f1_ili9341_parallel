@@ -589,7 +589,10 @@ void _ili_draw_fast_h_line(uint16_t x0, uint16_t y0, uint16_t x1, uint8_t width,
 	/*
 	* Draw a horizontal line very fast
 	*/
-	ili_set_address_window(x0, y0, x1, y0+width-1);	//as it's horizontal line, y1=y0.. must be.
+	if (x0 < x1)
+		ili_set_address_window(x0, y0, x1, y0+width-1);	//as it's horizontal line, y1=y0.. must be.
+	else
+		ili_set_address_window(x1, y0, x0, y0+width-1);	
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(x1 - x0 + 1));
 }
 
@@ -603,7 +606,12 @@ void _ili_draw_fast_v_line(uint16_t x0, uint16_t y0, uint16_t y1, uint8_t width,
 	/*
 	* Draw a vertical line very fast
 	*/
-	ili_set_address_window(x0, y0, x0+width-1, y1);	//as it's vertical line, x1=x0.. must be.
+	if (y0 < y1)
+		ili_set_address_window(x0, y0, x0+width-1, y1);	//as it's vertical line, x1=x0.. must be.
+	else
+		ili_set_address_window(x0, y1, x0+width-1, y0);	
+	
+	
 	ili_fill_color(color, (uint32_t)width * (uint32_t)abs(y1 - y0 + 1));
 }
 
